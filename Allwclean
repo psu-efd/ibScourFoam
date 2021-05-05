@@ -1,0 +1,3 @@
+wclean src
+wclean solvers/ibScourFoam
+
