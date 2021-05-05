@@ -13,14 +13,14 @@ Department of Civil and Environmental Engineering
 Institute of Computational and Data Sciences  
 Penn State University
 
-Yalan Song
+Yalan Song  
 Graduate Research Assistant  
 Department of Civil and Environmental Engineering  
 Penn State University  
 
-Yuncheng (Cloud) Xu (Former Ph.D. student at Penn State)
-Now Lecturer
-College of Water Resources and Civil Engineering
+Yuncheng (Cloud) Xu (Former Ph.D. student at Penn State)  
+Lecturer  
+College of Water Resources and Civil Engineering  
 China Agricultural University
 
 ## License ##
