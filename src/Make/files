@@ -1,0 +1,23 @@
+
+
+
+dualPatch/dualPatch.C
+
+sedModules/sedModules.C
+
+wallFuncModules/wallFuncModules.C
+
+immersedBoundaryStencils/immersedBoundaryStencils.C
+
+cutTriSurfaceMesh/cutTriSurfaceMesh.C
+
+
+immersedBoundaryFvMesh/immersedBoundaryFvMesh.C
+
+immersedBoundaryTurbulence/makeTurModel.C
+
+immersedBoundaryFvOptions/sources/ibMeanVelocityForce/ibMeanVelocityForce.C
+immersedBoundaryFvOptions/sources/ibMeanVelocityForce/ibMeanVelocityForceIO.C
+
+
+LIB = $(FOAM_USER_LIBBIN)/libIBMethod

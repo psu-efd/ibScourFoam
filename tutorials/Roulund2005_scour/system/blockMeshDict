@@ -1,0 +1,100 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  1.6                                   |
+|   \\  /    A nd           | Web:      http://www.OpenFOAM.org               |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+convertToMeters 1;
+D 0.1;
+
+xa #calc "-5*$D";
+xb #calc "9*$D";
+ya #calc "-4.5*$D";
+yb #calc "4.5*$D";
+za #calc "0*$D";
+zb #calc "2*$D";
+zc #calc "-1.0*$D";
+
+
+dx 0.01;
+dz 0.017;
+dz1 0.004;
+
+nx #calc "std::floor(($xb - $xa) / $dx)";//120
+ny #calc "std::floor(($yb - $ya) / $dx)";//95
+nz #calc "std::floor(($zb - $za) / $dz)";//24
+nz1 #calc "std::floor(($za - $zc) / $dz1)";//24
+
+
+vertices
+(
+    ($xa $ya $za) //0
+    ($xb $ya $za) //1
+    ($xb $yb $za) //2
+    ($xa $yb $za) //3
+    ($xa $ya $zb) //4
+    ($xb $ya $zb) //5
+    ($xb $yb $zb) //6
+    ($xa $yb $zb) //7
+    ($xa $ya $zc) //8
+    ($xb $ya $zc) //9
+    ($xb $yb $zc) //10
+    ($xa $yb $zc) //11
+
+);
+
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 10)
+    hex (8 9 10 11 0 1 2 3)($nx $ny $nz1) simpleGrading (1 1 1)
+);
+
+edges
+(
+);
+
+patches
+(
+    patch top 
+    (
+        (4 5 6 7)        
+    )
+    wall bottom
+    (
+        (8 11 10 9)    
+    )
+    patch inlet
+    (
+        (0 4 7 3)
+        (0 3 11 8)
+    )
+    patch outlet
+    (
+        (2 6 5 1)
+        (9 10 2 1)
+    )
+    patch frontAndBack
+    (
+        (0 4 5 1)
+        (3 7 6 2)
+        (8 0 1 9)
+        (11 3 2 10)
+    )
+);
+
+mergePatchPairs
+(
+);
+
+// ************************************************************************* //
