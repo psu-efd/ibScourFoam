@@ -7,8 +7,25 @@ This code utilizes some data structure and implementation of an immersed boundar
 
 Y. Xu and X. Liu (2021). An immersed boundary method with y+-adaptation wall function for smooth wall shear. International Journal of Numerical Methods in Fluids. https://doi.org/10.1002/fld.4960
 
+## Example simulation cases ##
+
+This repository comes with some examples showing how to use the code and demonstrating its capability to deal with scour around complex structures. Animations of the simulated scour process can be viewed at our group's YouTube channel:
+
+- The classic case of scour around vertical cylinder: [YouTube link](https://www.youtube.com/watch?v=JIKRwKyth5s&list=PLPt0QqiTKrmv6r52cZyp9l11i6auKGSMY&index=4).
+
+- Scour around a short cylinder on a supporting cradle: [YouTube link](https://www.youtube.com/watch?v=tf6YIUMZle0&list=PLPt0QqiTKrmv6r52cZyp9l11i6auKGSMY&index=5)
+
+- Scour around an object with complex shape on a supporting cradle: [YouTube link](https://www.youtube.com/watch?v=VU2N0s7i3nI&list=PLPt0QqiTKrmv6r52cZyp9l11i6auKGSMY&index=6)
+
+If you use our code to simulation interesting cases, please send figures or link to animations to <psuefd@gmail.com>.
+
 ## Acknowledgements ##
 This work is supported by the Strategic Environmental Research and Development Program (SERDP, Award Number W74RDV70063408). 
+
+## Disclaimer ##
+This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>, and owner of the OPENFOAM&copy;  and OpenCFD&copy; trade marks.
+
+OPENFOAM&copy; is a registered trade mark of OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>.
  
 ## Authors and contributors: ##
 Xiaofeng Liu, Ph.D., P.E.  
