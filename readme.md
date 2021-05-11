@@ -3,8 +3,12 @@ This repository is for the code and cases of ibScourFoam, a solver based on Open
 
 The code is developed with OpenFOAM v5. To use this code, it is required that OpenFOAM has been properly installed. Current code has only been used in Linux. Porting to Windows and Mac OS have not been done, but possible.
 
-## Acknowledgements ##
+This code utilizes some data structure and implementation of an immersed boundary method in the OpenFOAM-extend project. Details can be found in the citations and references of the following paper:
 
+Y. Xu and X. Liu (2021). An immersed boundary method with y+-adaptation wall function for smooth wall shear. International Journal of Numerical Methods in Fluids. https://doi.org/10.1002/fld.4960
+
+## Acknowledgements ##
+This work is supported by the Strategic Environmental Research and Development Program (SERDP, Award Number W74RDV70063408). 
  
 ## Authors and contributors: ##
 Xiaofeng Liu, Ph.D., P.E.  
