@@ -23,9 +23,9 @@ If you use our code to simulation interesting cases, please send figures or link
 This work is supported by the Strategic Environmental Research and Development Program (SERDP, Award Number W74RDV70063408). 
 
 ## Disclaimer ##
-This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>, and owner of the OPENFOAM&copy;  and OpenCFD&copy; trade marks.
+This offering is not approved or endorsed by OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>, and owner of the OPENFOAM&reg;  and OpenCFD&reg; trade marks.
 
-OPENFOAM&copy; is a registered trade mark of OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>.
+OPENFOAM&reg; is a registered trade mark of OpenCFD Limited, producer and distributor of the OpenFOAM software via <www.openfoam.com>.
  
 ## Authors and contributors: ##
 Xiaofeng Liu, Ph.D., P.E.  
