@@ -543,7 +543,7 @@ void Foam::immersedBoundaryFvMesh::kOmegaIbCorrection
 
     vectorField tauWall(ibCells.size(),pTraits<vector>::zero);
     
-    word wallFunc_ = ibProperties().lookupOrDefault<word>("wallFunction","vanDriest");
+    word wallFunc_ = ibProperties().lookupOrDefault<word>("wallFunction","log law");
 
     wallFunc_ = objectDictList()[objectID].lookupOrDefault<word>("wallFunction",wallFunc_);
     
@@ -553,9 +553,9 @@ void Foam::immersedBoundaryFvMesh::kOmegaIbCorrection
     // It has multiple functions:
     // 1. uTau -- calcualte shear velocity (with roughness) based on U, y
     // 2. uPlus
-    // 3. kOmegaUpdate -- include Wilcox2008, Menter2001, Baykal2015
+    // 3. kOmegaUpdate -- include Tamaki2017
     // 4. dudy, dupdyp -- derivatives
-    wallFuncModules wFM(wallFunc_,"Baykal2015");
+    wallFuncModules wFM(wallFunc_,"Tamaki2017");
     
     
     forAll(ibCells, ibCellI)
@@ -986,6 +986,310 @@ void Foam::immersedBoundaryFvMesh::hitPointExportToMesh
     }
 }
 
+
+
+
+
+
+
+//dynamicKEqnIBCorrection
+void Foam::immersedBoundaryFvMesh::dynamicKEqnIBCorrection
+(
+    const turbulenceModel& turbulence
+)const
+{
+    forAll(this->objectsList(),objectID)
+    {
+        if(IBtypeList()[objectID]=="classic")
+        {
+               dynamicKEqnIBCorrection(turbulence,objectID);
+        }
+
+    }
+
+}
+
+
+
+
+
+
+void Foam::immersedBoundaryFvMesh::dynamicKEqnIBCorrection
+(
+    const turbulenceModel& turbulence,
+    label objectID
+)const
+{
+
+
+    volScalarField& k = const_cast<volScalarField&>
+        (this->lookupObject<volScalarField>("k"));
+    volVectorField& U = const_cast<volVectorField&>
+        (this->lookupObject<volVectorField>("U"));
+    volScalarField& nu = const_cast<volScalarField&>
+        (this->lookupObject<volScalarField>("nu"));
+    volVectorField& shearVelocity = const_cast<volVectorField&>
+        (this->lookupObject<volVectorField>("shearVelocity"));
+    volScalarField& yplusIB = const_cast<volScalarField&>
+        (this->lookupObject<volScalarField>("yplusIB"));
+    volScalarField& yplus = const_cast<volScalarField&>
+        (this->lookupObject<volScalarField>("yplus"));
+    scalar Cmu_(0.09);
+    scalar kappa_(0.41);
+
+    
+    
+    scalar Ks_ = ibProperties().lookupOrDefault<scalar>("roughnessHeight",0);
+    Ks_ = objectDictList()[objectID].lookupOrDefault<scalar>("roughnessHeight",Ks_);
+    
+    scalar roughnessFactor_ = ibProperties().lookupOrDefault<scalar>("roughnessFactor",1);
+    roughnessFactor_ = objectDictList()[objectID].lookupOrDefault<scalar>("roughnessFactor",roughnessFactor_);
+
+
+    scalar roughnessConstant_ = ibProperties().lookupOrDefault<scalar>("roughnessConstant",0.5);
+    roughnessConstant_ = objectDictList()[objectID].lookupOrDefault<scalar>("roughnessConstant_",roughnessConstant_);
+
+  
+
+    const scalar Cmu25 = pow(Cmu_, 0.25);
+
+    const pointField& ibHitPoints = ibHitPointsList()[objectID];
+    const pointField& samplingPoints = samplingPointsList()[objectID];
+
+    const labelList& ibCells = ibCellsList()[objectID];
+
+    const pointField ibc_centers(this->C(),ibCells);
+    vectorField ibNormals = ibHitPoints-samplingPoints;
+    ibNormals=ibNormals/mag(ibNormals);
+    
+
+    
+    vectorField USample(samplingPointsValues(U,objectID));
+
+
+    // remove normal velocity
+    vectorField UTanSample=USample-(USample&ibNormals)*ibNormals;
+
+    scalarField UTanSampleMag=mag(UTanSample)+SMALL;
+    // nu at sampling point
+    scalarField nuSample(nu,ibCells);
+      
+    // k at sampling point
+    scalarField kSample(samplingPointsValues(k,objectID)+SMALL);
+
+    // IB distance
+    scalarField yIB(mag(ibc_centers-ibHitPoints)+SMALL);
+
+    // sampling distance
+    scalarField ySample(mag(samplingPoints-ibHitPoints)+SMALL);
+
+
+    if(debug)
+    {
+        Info<<"Interpolted values at sampled points"<<endl;
+        Info<<"    "<<"U"<<tab<<"k"<<tab<<"ySample"<<tab<<"yIB"<<endl;
+        Info<<"MIN "<<gMin(UTanSampleMag)<<tab<<gMin(kSample)<<tab<<gMin(ySample)<<tab<<gMin(yIB)<<endl;
+        Info<<"AVE "<<gAverage(UTanSampleMag)<<tab<<tab<<gAverage(kSample)<<tab<<gAverage(ySample)<<tab<<gAverage(yIB)<<endl;
+        Info<<"MAX "<<gMax(UTanSampleMag)<<tab<<tab<<gMax(kSample)<<tab<<gMax(ySample)<<tab<<gMax(yIB)<<endl;
+    }
+    scalarField kNew(k,ibCells);
+    scalarField utauNew(ibCells.size(),0);
+    scalarField UTanNew(ibCells.size(),pTraits<scalar>::zero);
+    // Calculate yPlus for sample points
+    scalarField ypd = Cmu25*ySample*sqrt(kSample)/nuSample;
+    scalarField ypIB=ypd;
+
+
+
+    vectorField tauWall(ibCells.size(),pTraits<vector>::zero);
+    
+    word wallFunc_ = ibProperties().lookupOrDefault<word>("wallFunction","vanDriest");
+
+    wallFunc_ = objectDictList()[objectID].lookupOrDefault<word>("wallFunction",wallFunc_);
+    
+    // wallFuncModules is to perform wall functions related calculations.
+    wallFuncModules wFM(wallFunc_,"Baykal2015");
+    
+    
+    forAll(ibCells, ibCellI)
+    { 
+        const scalar nuLam = nuSample[ibCellI];
+ 
+        scalar& UT =  UTanNew[ibCellI];
+     
+        scalar& yPlusSample = ypd[ibCellI];
+
+     	yPlusSample = wFM.yPlus
+         (
+	        UTanSampleMag[ibCellI],
+	        ySample[ibCellI],
+	        Ks_,
+	        roughnessFactor_,
+	        roughnessConstant_
+         );
+         
+        scalar& yPlusIB = ypIB[ibCellI];
+        yPlusIB = yPlusSample*yIB[ibCellI]/(SMALL+ySample[ibCellI]);
+        scalar uTau = yPlusSample*nuLam/(ySample[ibCellI]+SMALL);
+     
+        scalar kPlus = 1.0/0.3;
+        kNew[ibCellI] = kPlus*sqr(uTau);         
+        
+        scalar dupdyp = 1/(kappa_* yPlusSample + +SMALL);
+        
+ 
+        
+        UT = max(0.0,(UTanSampleMag[ibCellI] - dupdyp*uTau*(yPlusSample-yPlusIB)));
+        
+        utauNew[ibCellI] = uTau;
+       
+    
+        tauWall[ibCellI] = sqr(uTau)*UTanSample[ibCellI]/(UTanSampleMag[ibCellI] + SMALL);
+       
+            
+    }
+
+    forAll(ibCells,I)
+    {
+        scalar cellID=ibCells[I];
+
+
+        kNew[I] = k[cellID];
+        vector tmpUtan = U[cellID]-(U[cellID]&ibNormals[I])*ibNormals[I];
+
+        if(IBtypeList()[objectID]=="classic")
+        {
+            UTanNew[I] = mag(tmpUtan);
+        }
+    }
+    
+    
+    
+    
+
+    scalarList UPout(5);
+    scalarList utauPout(5);
+    scalarList kPout(5);
+    scalarList yPout(5);
+    scalarList yIBPout(5);
+    vectorList tauWallPout(4);
+    
+    UPout[0] = gMin(UTanNew);
+    utauPout[0] = gMin(utauNew);
+    kPout[0] = gMin(kNew);
+    yPout[0] = gMin(ypd);
+    yIBPout[0] = gMin(ypIB);
+    tauWallPout[0] = gMin(tauWall);
+
+    UPout[1] = gMax(UTanNew);
+    utauPout[1] = gMax(utauNew);
+    kPout[1] = gMax(kNew);
+    yPout[1] = gMax(ypd);
+    yIBPout[1] = gMax(ypIB);
+    tauWallPout[1] = gMax(tauWall);
+
+
+    UPout[2] = gAverage(UTanNew);
+    utauPout[2] = gAverage(utauNew);
+    kPout[2] = gAverage(kNew);
+    yPout[2] = gAverage(ypd);
+    yIBPout[2] = gAverage(ypIB);
+    tauWallPout[2] = gAverage(tauWall);
+
+    Info<< "UTangentialNew utauNew kNew yPlus yPlusIB tauWall" << endl;
+
+    for (label I = 0; I < 3; I++)
+    {
+        if(I==0){Info<<"min ";}
+        if(I==1){Info<<"max ";}
+        if(I==2){Info<<"ave ";}
+        Info<<UPout[I]<<" "
+            <<utauPout[I]<<" "
+            <<kPout[I]<<" "
+            <<yPout[I]<<" "
+            <<yIBPout[I]<<" "
+            <<tauWallPout[I]<<" "<<endl;
+    }
+    volVectorField& U_desired = const_cast<volVectorField&>
+        (this->lookupObject<volVectorField>("U_desired"));
+
+    U_desired = U;
+     // insert IB values
+    forAll(ibCells,I)
+    {
+        label cellID = ibCells[I];
+       shearVelocity[cellID] = utauNew[I]*UTanSample[I]/(UTanSampleMag[I] + SMALL);
+       yplusIB[cellID] = ypIB[I];
+       yplus[cellID] =ypd[I];
+        vector Unormal = (U[cellID]&ibNormals[I])*ibNormals[I];
+        vector Utan = UTanSample[I]/(UTanSampleMag[I]+SMALL);
+        k[cellID] = kNew[I];
+        Unormal = Unormal*(sqr(yIB[I])/sqr(ySample[I]));// Unormal should be removed or scaled?
+        if(IBtypeList()[objectID]!="mix")
+        {
+            U[cellID] = Utan*UTanNew[I]+Unormal;
+        }
+    }
+
+    // transfer wall shear stress to pointer
+    wallShearStressListPtr_->set
+    (
+        objectID,
+        tauWall
+    );
+
+    
+    if(debug)
+    {
+        hitPointExportToMesh("yPlus",ypd,objectID);
+        hitPointExportToMesh("kNew",kNew,objectID);   
+	    hitPointExportToMesh("ypIB",ypIB,objectID);
+        hitPointExportToMesh("yIB",yIB,objectID);
+        hitPointExportToMesh("ySample",ySample,objectID);
+        hitPointExportToMesh("UTanNew",UTanNew,objectID);
+        hitPointExportToMesh("USampleMag",UTanSampleMag,objectID);
+    }
+    
+    const dictionary& dict = objectDictList()[objectID].subDict("sediment");
+    bool changeSTL(dict.lookupOrDefault<bool>("changeSTL",true));
+    if(!changeSTL)
+    {
+        hitPointExportToMesh("wallShearStress",tauWall,objectID);
+    }
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //SmagorinskyCorrection
 void Foam::immersedBoundaryFvMesh::SmagorinskyCorrection
 (
@@ -1006,6 +1310,12 @@ void Foam::immersedBoundaryFvMesh::SmagorinskyCorrection
     }
 
 }
+
+
+
+
+
+
 void Foam::immersedBoundaryFvMesh::SmagorinskyCorrection
 (
     const turbulenceModel& turbulence,

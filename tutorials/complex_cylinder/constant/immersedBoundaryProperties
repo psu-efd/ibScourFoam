@@ -42,8 +42,8 @@ updateInterval 1; //default 1
 // export surface mesh and its related values time step
 extrudeMeshOutputTimeStep 1;
 
-// velocity profile selection, default "two-layer";  Other options: "vanDriest", "Spalding"
-wallFunction "vanDriest";
+// velocity profile selection, default "log law"
+wallFunction "log law";
 
 objects
 {
@@ -69,7 +69,7 @@ objects
 			//sediment transport
 			gravity   (0 0 -9.81); 
 			staticFrictionCoefficient 0.625; //32 degrees
-			shieldsNumberC0 0.025; //default 0.098
+			shieldsNumberC0 0.016; //default 0.098
 			specificGravity 2.63; // default 2.69
 			grainDiameter 0.00067;
 			deformScale 1; // default 1
