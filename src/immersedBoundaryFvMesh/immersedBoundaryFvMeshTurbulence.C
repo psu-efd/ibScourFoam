@@ -991,7 +991,7 @@ void Foam::immersedBoundaryFvMesh::hitPointExportToMesh
 
 
 
-
+/*
 //dynamicKEqnIBCorrection
 void Foam::immersedBoundaryFvMesh::dynamicKEqnIBCorrection
 (
@@ -1281,7 +1281,7 @@ void Foam::immersedBoundaryFvMesh::dynamicKEqnIBCorrection
 
 
 
-
+*/
 
 
 
