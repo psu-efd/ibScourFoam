@@ -543,7 +543,7 @@ void Foam::immersedBoundaryFvMesh::kOmegaIbCorrection
 
     vectorField tauWall(ibCells.size(),pTraits<vector>::zero);
     
-    word wallFunc_ = ibProperties().lookupOrDefault<word>("wallFunction","log law");
+    word wallFunc_ = ibProperties().lookupOrDefault<word>("wallFunction","log_law");
 
     wallFunc_ = objectDictList()[objectID].lookupOrDefault<word>("wallFunction",wallFunc_);
     

@@ -43,7 +43,7 @@ updateInterval 1; //default 1
 extrudeMeshOutputTimeStep 1;
 
 // velocity profile selection, default "log law"
-wallFunction "log law";
+//wallFunction "log_law";
 
 objects
 {
