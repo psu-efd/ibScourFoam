@@ -15,21 +15,26 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 convertToMeters 1;
-D 0.536;
+D 1;
 
-xa #calc "-3*$D";
-xb #calc "6*$D";
-ya #calc "-2.5*$D";
-yb #calc "2.5*$D";
-za #calc "-0.01*$D";
-zb #calc "1*$D";
+xa #calc "-0.65*$D";
+xb #calc "1.5*$D";
+ya #calc "-0.74*$D";
+yb #calc "0.74*$D";
+za #calc "-0.055*$D";
+zb #calc "0.4*$D";
 
-dx 0.035;
-dz 0.025;
+
+//un 0.01;
+dx 0.03;
+dz 0.03;
+//un 0.0078;
 
 nx #calc "std::floor(($xb - $xa) / $dx)";//120
 ny #calc "std::floor(($yb - $ya) / $dx)";//95
 nz #calc "std::floor(($zb - $za) / $dz)";//24
+
+//nz 10; 
 
 vertices
 (
@@ -41,12 +46,14 @@ vertices
     ($xb $ya $zb) //5
     ($xb $yb $zb) //6
     ($xa $yb $zb) //7
+
 );
 
 
 blocks
 (
-    hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 7)
+    hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 1)
+//    hex (0 1 2 3 4 5 6 7) (100 25 33) simpleGrading (1 1 1)
 );
 
 edges
@@ -55,7 +62,7 @@ edges
 
 patches
 (
-    patch top 
+    symmetryPlane top 
     (
         (4 5 6 7)        
     )
@@ -71,7 +78,7 @@ patches
     (
         (2 6 5 1)
     )
-    patch frontAndBack
+    wall frontAndBack
     (
         (0 4 5 1)
         (3 7 6 2)

@@ -15,21 +15,26 @@ FoamFile
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 convertToMeters 1;
-D 0.536;
+D 0.1;
 
-xa #calc "-3*$D";
-xb #calc "6*$D";
-ya #calc "-2.5*$D";
-yb #calc "2.5*$D";
-za #calc "-0.01*$D";
-zb #calc "1*$D";
+xa #calc "-7*$D";
+xb #calc "15*$D";
+ya #calc "-6*$D";
+yb #calc "6*$D";
+za #calc "0*$D";
+zb #calc "4*$D";
+zc #calc "-1.2*$D";
 
-dx 0.035;
-dz 0.025;
+
+dx 0.05;
+dz 0.05;
+dz1 0.025;
 
 nx #calc "std::floor(($xb - $xa) / $dx)";//120
 ny #calc "std::floor(($yb - $ya) / $dx)";//95
 nz #calc "std::floor(($zb - $za) / $dz)";//24
+nz1 #calc "std::floor(($za - $zc) / $dz1)";//24
+
 
 vertices
 (
@@ -41,12 +46,18 @@ vertices
     ($xb $ya $zb) //5
     ($xb $yb $zb) //6
     ($xa $yb $zb) //7
+    ($xa $ya $zc) //8
+    ($xb $ya $zc) //9
+    ($xb $yb $zc) //10
+    ($xa $yb $zc) //11
+
 );
 
 
 blocks
 (
     hex (0 1 2 3 4 5 6 7) ($nx $ny $nz) simpleGrading (1 1 7)
+    hex (8 9 10 11 0 1 2 3)($nx $ny $nz1) simpleGrading (1 1 1)
 );
 
 edges
@@ -61,20 +72,24 @@ patches
     )
     wall bottom
     (
-        (0 3 2 1)    
+        (8 11 10 9)    
     )
     patch inlet
     (
         (0 4 7 3)
+        (0 3 11 8)
     )
     patch outlet
     (
         (2 6 5 1)
+        (9 10 2 1)
     )
     patch frontAndBack
     (
         (0 4 5 1)
         (3 7 6 2)
+        (8 0 1 9)
+        (11 3 2 10)
     )
 );
 

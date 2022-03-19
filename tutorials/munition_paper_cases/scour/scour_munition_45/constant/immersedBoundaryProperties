@@ -1,0 +1,99 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  dev                                   |
+|   \\  /    A nd           | Web:      www.OpenFOAM.org                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      ibDict;
+}
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// points inside fluid region or computational domain
+pointsInFluid ((-0.2 0.2 0.1));
+
+// for searching span (default 3.0)
+radiusFactor 2.5;
+
+// samplingPts = hitPts + distFactor*(IBCellCenter-hitPts) (default 1.5)
+
+distFactor 3;
+
+// maximum rows of findCellCells (gamma>0) (default 4.0)
+maxCellCellRows 3;
+
+// hit points for each interpolation stencil from 3D to 2D
+triInterpSize 10;
+
+//  maximum number of cellCells (gamma>0), it may affect speed a lot (default 45)
+/*maxCellCellNum 45;*/
+
+// roughnessHeight for RANS model wall function, default 0, which is smooth
+roughnessHeight 0.01;
+
+roughnessConstant 0.5;
+roughnessFactor 1;
+
+updateInterval 1; //default 1
+
+// export surface mesh and its related values time step
+extrudeMeshOutputTimeStep 1;
+
+// velocity profile selection, default "log_law";  
+wallFunction "log_law";
+
+objects
+{
+	plane
+	{
+		
+		IBtype classic; 
+		dualMeshSwicth true;
+		gravity   (0 0 -9.81);
+
+		sediment	
+		{
+			// fix inlet BC elevation
+                       fixInlet true;
+                       fixInletAtx -0.65;
+                      // ensure mass conservation of sediment
+                        feedInlet false;
+
+			bedLoad true; //default true
+			suspendedLoad false; //default true
+	
+
+			changeSTL false; // default true, otherwise only calculate values
+	
+			//sediment transport
+			gravity   (0 0 -9.81);
+                        scour_object munition;
+                        scour_object_factor 1.2;
+			staticFrictionCoefficient 0.625; //32 degrees
+			shieldsNumberC0 0.016; //default 0.098
+			specificGravity 2.63; // default 2.69
+			grainDiameter 0.00067;
+			deformScale 50; // default 1
+			sandSlide true; // default true
+                        sand_slide_err1 1e-5;
+                        sand_slide_err2 1e-7;
+                        sandSlide_maxItr 200;
+                        sandSlide_diffusivity 0.001;
+                        sandSlide_timeStep  0.001;
+
+			referenceHeight -1; // default -1, suggest 0.05 * water depth			
+			VsModel "Fredse1992"; // default constant
+			V0 (0 0 -5.0e-3); // no default
+ 		}
+		
+	}
+}
+
+
+// ************************************************************************* //
