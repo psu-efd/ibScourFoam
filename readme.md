@@ -1,7 +1,7 @@
 # README #
 This repository is for the code and cases of ibScourFoam, a solver based on OpenFOAM for 3D scour modeling around structures/objects with complex shape. The scour process is simulated with an improved immersed boundary method which produces smooth wall shear stresses. 
 
-The code is developed with OpenFOAM v5. To use this code, it is required that OpenFOAM has been properly installed. Current code has only been used in Linux. Porting to Windows and Mac OS have not been done, but possible.
+The code is developed with OpenFOAM v5.x. To use this code, it is required that OpenFOAM has been properly installed. Current code has only been used in Linux. Porting to Windows and Mac OS have not been done, but possible.
 
 This code utilizes some data structure and implementation of an immersed boundary method in the OpenFOAM-extend project. Details can be found in the citations and references of the following paper:
 
