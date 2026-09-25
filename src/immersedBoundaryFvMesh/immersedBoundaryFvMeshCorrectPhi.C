@@ -91,7 +91,7 @@ void immersedBoundaryFvMesh::ibFacesAdjust
 ) const
 {
     dictionary turbDict (this->lookupObject<dictionary>("turbulenceProperties"));
-    word modelType=turbDict.lookup("simulationType");
+    word modelType = turbDict.get<word>("simulationType");
     if(modelType=="laminar")
     {
         fromIbFaceSPointReconstruction(phi,U,objectID);
@@ -130,7 +130,7 @@ void immersedBoundaryFvMesh::ibFacesAdjust
           (
              "transportProperties"
           );
-    dimensionedScalar nu(transportProperties.lookup("nu"));
+    dimensionedScalar nu("nu", transportProperties);
 
     scalar nuLam=nu.value();
 

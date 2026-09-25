@@ -26,6 +26,8 @@ Description
 SourceFiles
     immersedBoundaryFvMeshDualCalcs.C
 \*---------------------------------------------------------------------------*/
+#include "mathematicalConstants.H"
+#include "unitConversion.H"
 
 #include "immersedBoundaryFvMesh.H"
 #include "MeshWave.H"
@@ -70,7 +72,7 @@ void Foam::immersedBoundaryFvMesh::sediment_dual(const label& objectID)const
               (
                  "transportProperties"
               );
-        dimensionedScalar nu(transportProperties.lookup("nu"));
+        dimensionedScalar nu("nu", transportProperties);
 
         PtrList<triSurface>& addSurfs= addObjectsList();
         
@@ -287,17 +289,15 @@ void Foam::immersedBoundaryFvMesh::sediment_dual(const label& objectID)const
 
 
             // depositionListPtr_ and entrainmentListPtr_ will be used in CEqn.H
-            depositionListPtr_->set
-            (
-                objectID,
-                ibDeposition
-            );
+            depositionListPtr_->set(
+        objectID,
+        new scalarField(ibDeposition)
+    );
 
-            entrainmentListPtr_->set
-            (
-                objectID,
-                ibEntrainment
-            );
+            entrainmentListPtr_->set(
+        objectID,
+        new scalarField(ibEntrainment)
+    );
 
             
             Info<< "SEDIMENT INFOMATION"<<endl;
@@ -406,20 +406,18 @@ void Foam::immersedBoundaryFvMesh::sediment_dual(const label& objectID)const
        
         if(!accumDItaListPtr_->set(objectID))
         {
-            accumDItaListPtr_->set
-            (
-                objectID,
-                accumDIta
-            );
+            accumDItaListPtr_->set(
+        objectID,
+        new scalarField(accumDIta)
+    );
         }
         else
         {
             accumDIta +=accumDItaList(objectID);
-            accumDItaListPtr_->set
-            (
-                objectID,
-                accumDIta
-            );
+            accumDItaListPtr_->set(
+        objectID,
+        new scalarField(accumDIta)
+    );
         }
 
   

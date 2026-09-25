@@ -43,10 +43,8 @@
 
 #include "treeBoundBox.H"
 #include "triSurfaceSearch.H"
-#include "surfaceIntersection.H"
 #include "indexedOctree.H"
 #include "treeDataTriSurface.H"
-#include "edgeIntersections.H"
 #include "treeDataEdge.H"
 #include "treeDataPrimitivePatch.H"
 #include "DynamicList.H"
@@ -72,7 +70,7 @@ public:
  
     typedef treeDataPrimitivePatch<polyPatch> patchTreeData;
     typedef indexedOctree<patchTreeData> patchSearch;
-    typedef PrimitivePatch<face, ::Foam::List, pointField, point> PPatch;
+    typedef PrimitivePatch<::Foam::List<face>, pointField> PPatch;
 
 private:
  // Private member data

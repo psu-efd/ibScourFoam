@@ -81,7 +81,7 @@ void Foam::immersedBoundaryFvMesh::initialIB() const
                       (
                          "transportProperties"
                       );
-                dimensionedScalar nu(transportProperties.lookup("nu"));
+                dimensionedScalar nu("nu", transportProperties);
 
                 scalar nuLam=nu.value();
 
@@ -223,10 +223,10 @@ void Foam::immersedBoundaryFvMesh::setInlet() const
                       (
                          "transportProperties"
                       );
-                dimensionedScalar nu(transportProperties.lookup("nu"));
+                dimensionedScalar nu("nu", transportProperties);
 
                 
-                vector gravity= objectDictList()[objectID].lookup("gravity");
+                vector gravity = objectDictList()[objectID].get<vector>("gravity");
                 vector gDir = gravity/mag(gravity);
 
                 boundBox* meshBB = new boundBox(this->points(), false);
@@ -341,7 +341,7 @@ void Foam::immersedBoundaryFvMesh::evaluateU() const
 
     word nutWORD = "nut";
     dictionary turbDict (this->lookupObject<dictionary>("turbulenceProperties"));
-    word modelType = turbDict.lookup("simulationType");
+    word modelType = turbDict.get<word>("simulationType");
     if(modelType == "laminar")
     {
         nutWORD = "nu";
@@ -483,7 +483,7 @@ void Foam::immersedBoundaryFvMesh::ibCellForcing
 
 
     dictionary turbDict (this->lookupObject<dictionary>("turbulenceProperties"));
-    word modelType=turbDict.lookup("simulationType");
+    word modelType = turbDict.get<word>("simulationType");
     if(modelType == "laminar")
     {
         fromSPointReconstruction(U,objectID);
@@ -560,7 +560,7 @@ void Foam::immersedBoundaryFvMesh::ibCellReconstruction
 
     evaluateCoupled(U);
 
-    word modelType = turbDict.lookup("simulationType");
+    word modelType = turbDict.get<word>("simulationType");
 
 
 
@@ -599,7 +599,7 @@ void Foam::immersedBoundaryFvMesh::ghostCellReconstruction
         (this->lookupObject<surfaceScalarField>("phi"));
 
     const labelList& gCL = ghostCellsList()[objectID];
-    word modelType = turbDict.lookup("simulationType");
+    word modelType = turbDict.get<word>("simulationType");
     if(modelType == "laminar")
     {
         const pointField& imagePoints = imagePointsList()[objectID];
@@ -890,16 +890,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::stencilInterpolation
 {
     if (psi.size() != this->nCells())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::stencilInterpolation\n"
-            "(\n"
-            "    const Field<Type>& psi\n"
-            "    label objectID,\n"
-            ") const"
-        )   << "Field size does not correspond to cell centres "
+        FatalErrorInFunction   << "Field size does not correspond to cell centres "
             << "for patch " << ibProperties().subDict("objects").toc()[objectID] << nl
             << "Field size = " << psi.size()
             << " nCells = " << this->nCells()
@@ -1198,8 +1189,8 @@ void immersedBoundaryFvMesh::correctOffDiag
     const labelList& ibFaceCells = ibFaceCellsList()[objectID];
     const scalarField& ibGamma = ibGammaList()[objectID].primitiveField();
 
-    const unallocLabelList& own = this->owner();
-    const unallocLabelList& nei = this->neighbour();
+    const labelUList& own = this->owner();
+    const labelUList& nei = this->neighbour();
 
     // Get delta coefficients
     const surfaceScalarField& dc = this->deltaCoeffs();

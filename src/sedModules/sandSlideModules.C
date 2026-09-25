@@ -153,7 +153,7 @@ bool Foam::sedModules::sandSlide
         }
         else
         {
-              FatalErrorIn("gradientScheme")
+              FatalErrorInFunction
               << "The specified gradientScheme is not valid." << nl
               << abort(FatalError);
 

@@ -3,6 +3,10 @@ This repository is for the code and cases of ibScourFoam, a solver based on Open
 
 The code is developed with OpenFOAM v5.x. To use this code, it is required that OpenFOAM has been properly installed. Current code has only been used in Linux. Porting to Windows and Mac OS have not been done, but possible.
 
+## OpenFOAM v2206 Port ##
+
+This fork has been updated to compile and run with OpenFOAM v2206 (ESI/OpenCFD). The port was developed by Azadeh Mousavi (HDR) and verified on the Roulund2005 scour tutorial case (flow, sediment transport via the Exner equation, and the sand-slide algorithm all confirmed working). The updated code is on the `port-v2206` branch.
+
 This code utilizes some data structure and implementation of an immersed boundary method in the OpenFOAM-extend project. Details can be found in the citations and references of the following paper:
 
 Y. Xu and X. Liu (2021). An immersed boundary method with y+-adaptation wall function for smooth wall shear. International Journal of Numerical Methods in Fluids. https://doi.org/10.1002/fld.4960

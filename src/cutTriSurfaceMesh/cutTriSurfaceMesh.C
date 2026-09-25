@@ -1177,7 +1177,12 @@ void Foam::cutTriSurfaceMesh::makeBoundaryFacesAndEdges
             face oldFace = faces[globalFaceID];
             oldFace.triangles(points,dynNewTriFaces);
         }
-        triFaceList newTriFaces(dynNewTriFaces.shrink());
+        const List<face>& dynFaces = dynNewTriFaces.shrink();
+        triFaceList newTriFaces(dynFaces.size());
+        forAll(dynFaces, i)
+        {
+            newTriFaces[i] = triFace(dynFaces[i][0], dynFaces[i][1], dynFaces[i][2]);
+        }
         totalTriFaces.append(newTriFaces);
 
         triSurface patchSurf(newTriFaces,points);
@@ -1449,7 +1454,12 @@ void Foam::cutTriSurfaceMesh::makeBoundaryFacesAndEdges
             face oldFace = faces[globalFaceID];
             oldFace.triangles(points,dynNewTriFaces);
         }
-        triFaceList newTriFaces(dynNewTriFaces.shrink());
+        const List<face>& dynFaces = dynNewTriFaces.shrink();
+        triFaceList newTriFaces(dynFaces.size());
+        forAll(dynFaces, i)
+        {
+            newTriFaces[i] = triFace(dynFaces[i][0], dynFaces[i][1], dynFaces[i][2]);
+        }
         totalTriFaces.append(newTriFaces);
 
         triSurface patchSurf(newTriFaces,points);
@@ -1819,10 +1829,7 @@ bool Foam::cutTriSurfaceMesh::ifInStl
     }
     else
     { 
-        FatalErrorIn
-                (
-                    "Face in the STL has problem"
-                )   << "Can't find nearest triSurface point for point "
+        FatalErrorInFunction   << "Can't find nearest triSurface point for point "
                     << C << ", "
                     << "span = " << span
                     << "\nYou could try to increase the search span. "

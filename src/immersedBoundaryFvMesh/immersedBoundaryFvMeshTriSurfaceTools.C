@@ -45,16 +45,7 @@ void Foam::immersedBoundaryFvMesh::writeVTK
     if (psi.size() != ts.size())
     {
         word names = objectNames(objectID);
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::writeVTK\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of "
+        FatalErrorInFunction   << "Field size does not correspond to size of "
             << "triangulated surface for object " << objectNames(objectID) << nl
             << "Field size = " << psi.size()
             << " triSurface size = " << ts.size()

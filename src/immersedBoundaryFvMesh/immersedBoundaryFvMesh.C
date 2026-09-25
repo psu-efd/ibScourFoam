@@ -55,7 +55,7 @@ void Foam::immersedBoundaryFvMesh::readDict()
 
     if (debug==2)
     {
-        InfoIn("void immersedBoundaryFvMesh::readDict() const")
+        InfoInFunction
             << "read immersedBoundaryProperties "
             << endl;
     }
@@ -64,7 +64,7 @@ void Foam::immersedBoundaryFvMesh::readDict()
     // if the pointer is already set
     if (objectDictListPtr_ || ibPropertiesPtr_ ||IBtypeListPtr_)
     {
-        FatalErrorIn("immersedBoundaryFvMesh::readDict() const")
+        FatalErrorInFunction
             << "read immersedBoundaryProperties  "
             << "objectDictListPtr_ || ibPropertiesPtr_||IBtypeListPtr_"
             << abort(FatalError);
@@ -134,7 +134,7 @@ void Foam::immersedBoundaryFvMesh::readDict()
         }
         else
         {
-            FatalErrorIn("immersedBoundaryFvMesh::markCells")
+            FatalErrorInFunction
                 << "IBtype " << IBtype
                 << " is not ghost-cell or classic"
                 << exit(FatalError);
@@ -166,7 +166,7 @@ bool Foam::immersedBoundaryFvMesh::readStl()
 
     if (debug==2)
     {
-        InfoIn("void immersedBoundaryFvMesh::readStl() const")
+        InfoInFunction
             << "read triSurfaces "
             << endl;
     }
@@ -175,7 +175,7 @@ bool Foam::immersedBoundaryFvMesh::readStl()
     // if the pointer is already set
     if ( objectsListPtr_ ||addObjectsListPtr_)
     {
-        FatalErrorIn("immersedBoundaryFvMesh::readStl() const")
+        FatalErrorInFunction
             << "read triSurfaces  "
             << "objectsListPtr_||addObjectsListPtr_"
             << abort(FatalError);
@@ -263,7 +263,7 @@ void Foam::immersedBoundaryFvMesh::readDualDict()
 
     if (debug==2)
     {
-        InfoIn("void immersedBoundaryFvMesh::readDualDict() const")
+        InfoInFunction
             << "read immersedBoundaryProperties "
             << endl;
     }
@@ -272,7 +272,7 @@ void Foam::immersedBoundaryFvMesh::readDualDict()
     // if the pointer is already set
     if ( triSurfaceSearchListPtr_ ||dualListPtr_)
     {
-        FatalErrorIn("immersedBoundaryFvMesh::readStl() const")
+        FatalErrorInFunction
             << "read triSurfaces  "
             << "triSurfaceSearchListPtr_  ||dualListPtr_"
             << abort(FatalError);

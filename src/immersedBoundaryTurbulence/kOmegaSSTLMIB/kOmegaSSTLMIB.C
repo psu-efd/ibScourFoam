@@ -66,7 +66,7 @@ tmp<volScalarField::Internal> kOmegaSSTLMIB<BasicTurbulenceModel>::epsilonByk
 {
     return
         min(max(gammaIntEff_, scalar(0.1)), scalar(1))
-       *kOmegaSST<BasicTurbulenceModel>::epsilonByk(F1, F2);
+       *this->beta1_*this->omega_;
 }
 
 
@@ -85,20 +85,18 @@ tmp<volScalarField::Internal> kOmegaSSTLMIB<BasicTurbulenceModel>::Fthetat
     const volScalarField::Internal ReOmega(sqr(y)*omega/nu);
     const volScalarField::Internal Fwake(exp(-sqr(ReOmega/1e5)));
 
-    return tmp<volScalarField::Internal>
-    (
-        new volScalarField::Internal
+    return volScalarField::Internal::New(
+        IOobject::groupName("Fthetat", this->alphaRhoPhi_.group()),
+        this->mesh_,
+        dimless,
+        min
         (
-            IOobject::groupName("Fthetat", this->alphaRhoPhi_.group()),
-            min
+            max
             (
-                max
-                (
-                    Fwake*exp(-pow4((y/delta))),
-                    (1 - sqr((gammaInt_() - 1.0/ce2_)/(1 - 1.0/ce2_)))
-                ),
-                scalar(1)
-            )
+                Fwake*exp(-pow4((y/delta))),
+                (1 - sqr((gammaInt_() - 1.0/ce2_)/(1 - 1.0/ce2_)))
+            ),
+            scalar(1)
         )
     );
 }
@@ -339,13 +337,11 @@ tmp<volScalarField::Internal> kOmegaSSTLMIB<BasicTurbulenceModel>::Fonset
 
     const volScalarField::Internal Fonset3(max(1 - pow3(RT/2.5), scalar(0)));
 
-    return tmp<volScalarField::Internal>
-    (
-        new volScalarField::Internal
-        (
-            IOobject::groupName("Fonset", this->alphaRhoPhi_.group()),
-            max(Fonset2 - Fonset3, scalar(0))
-        )
+    return volScalarField::Internal::New(
+        IOobject::groupName("Fonset", this->alphaRhoPhi_.group()),
+        this->mesh_,
+        dimless,
+        max(Fonset2 - Fonset3, scalar(0))
     );
 }
 

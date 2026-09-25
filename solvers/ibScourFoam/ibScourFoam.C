@@ -45,7 +45,6 @@ Description
 #include "fvOptions.H"
 #include "immersedBoundaryFvMesh.H"
 #include "wallFvPatch.H"
-#include "LduMatrix.H"
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
 
 int main(int argc, char *argv[])

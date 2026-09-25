@@ -188,7 +188,7 @@ void Foam::immersedBoundaryFvMesh::updateVs( const label& objectID) const
           (
              "transportProperties"
           );
-    dimensionedScalar nu(transportProperties.lookup("nu"));
+    dimensionedScalar nu("nu", transportProperties);
 
     if (VsModel == "constant")  //constant settling velocity
     {
@@ -227,7 +227,7 @@ void Foam::immersedBoundaryFvMesh::updateVs( const label& objectID) const
     }
     else
     {
-        FatalErrorIn("Foam::immersedBoundaryFvMesh::updateVs()")
+        FatalErrorInFunction
             << "Unknown VsModel : " << VsModel
             << abort(FatalError);
     }

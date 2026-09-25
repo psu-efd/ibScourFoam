@@ -32,7 +32,7 @@ SourceFiles
 #include "SortableList.H"
 #include "fvCFD.H"
 #include "turbulenceModel.H"
-#include "vectorTools.H"
+// vectorTools.H – path fixed in Make/options for v2206
 #include "fileOperation.H"
 #include "turbulentTransportModel.H"
 #include "vtkSurfaceWriter.H"
@@ -214,10 +214,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
             label pointID1 = oldToNewPtMap[e.end()];
             if(pointID0<0 or pointID1<0)
             {
-                WarningIn
-                (
-                    "immersedBoundaryFvMesh::extrudedMesh() const"
-                )   << "include edge "<<edgeID
+                WarningInFunction   << "include edge "<<edgeID
                     <<" does not have oldToNewPtMap for one of its ends "
                     <<pointID0<<" "<<pointID1<<endl;
             }
@@ -241,10 +238,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
             faceID1 = oldToNewFcMap[faceID1];
             if(faceID0<0 or faceID1<0)
             {
-                WarningIn
-                (
-                    "immersedBoundaryFvMesh::extrudedMesh() const"
-                )   << "include edge or internal face "<<edgeID
+                WarningInFunction   << "include edge or internal face "<<edgeID
                     <<" does not have oldToNewFcMap for one of neighbours "
                     <<faceID0<<" "<<faceID1<<endl;
             }
@@ -306,10 +300,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
         label faceID1 = surf_org.edgeFaces()[edgeID][1];
         if(faceID0<0 or faceID1<0)
         {
-            WarningIn
-            (
-                "immersedBoundaryFvMesh::extrudedMesh() const"
-            )   << "boundary edge or boundary face "<<edgeID
+            WarningInFunction   << "boundary edge or boundary face "<<edgeID
                 <<" does not have oldToNewFcMap for one of neighbours "
                 <<faceID0<<" "<<faceID1<<endl;
         }
@@ -414,8 +405,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
         }
     }
 
-    Xfer<pointField> XferNewPoints(newPoints);
-    
+    // First mesh: pass COPIES (lists needed again later for second mesh)
     Foam::fvMesh mesh
     (
         IOobject
@@ -424,12 +414,12 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
             time().constant(),
             time(),
             IOobject::NO_READ,
-            IOobject::NO_WRITE
+            IOobject::AUTO_WRITE
         ),
-        XferNewPoints,
-        newFaces.xfer(),
-        newOwners.xfer(),
-        newNeighbours.xfer()
+        pointField(newPoints),
+        faceList(newFaces),
+        labelList(newOwners),
+        labelList(newNeighbours)
     );
         
 
@@ -515,6 +505,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
 
     mesh.write();
 
+
     oldToNewDualEdgeMapListPrt_->set
     (
         objectID,
@@ -561,8 +552,10 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
     }
     // Read again and save it to pointer
     // Cannot directly use the mesh made above
+    // v2206: re-read the dual mesh written above (AUTO_WRITE handles the
+    // per-processor write in parallel).
     dualMeshListPtr_->set
-    ( 
+    (
         objectID,
         new fvMesh
         (
@@ -573,11 +566,7 @@ void Foam::immersedBoundaryFvMesh::makeDualMesh(const label& objectID)const
                 time(),
                 IOobject::MUST_READ,
                 IOobject::NO_WRITE
-            ),
-            XferNewPoints,
-            newFaces.xfer(),
-            newOwners.xfer(),
-            newNeighbours.xfer()
+            )
         )
     );
     

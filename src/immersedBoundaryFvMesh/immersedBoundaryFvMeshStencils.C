@@ -39,7 +39,7 @@ void Foam::immersedBoundaryFvMesh::makeStencilsInfo() const
 {
     if (debug==2)
     {
-        InfoIn("void immersedBoundaryFvMesh::makeStencils() const")
+        InfoInFunction
             << "make stencils for IB and ghost cells "
             << endl;
     }
@@ -50,7 +50,7 @@ void Foam::immersedBoundaryFvMesh::makeStencilsInfo() const
     ibHitFacesListPtr_ || ghostHitFacesListPtr_ ||
     samplingPointsListPtr_ || farSamplingPointsListPtr_ ||imagePointsListPtr_ )
     {
-        FatalErrorIn("immersedBoundaryFvMesh::readDict() const")
+        FatalErrorInFunction
             << "make stencils for IB and ghost cells "
             << "ibHitPointsListPtr_ || ghostHitPointsListPtr_ ||"
             << "ibHitFacesListPtr_ || ghostHitFacesListPtr_ ||"
@@ -237,10 +237,7 @@ void Foam::immersedBoundaryFvMesh::makeIbHitAndSamplingPoints(const label& objec
         }
         else
         {
-            FatalErrorIn
-                (
-                    "Foam::bool Foam::immersedBoundaryFvMesh::makeIbHitAndSamplingPoints"
-                )   << "cell " << cellID<< " at location " << this->cellCentres()[cellID]
+            FatalErrorInFunction   << "cell " << cellID<< " at location " << this->cellCentres()[cellID]
                     <<" does not has hit point on object "<< objectNames(objectID)
                     << abort(FatalError);
         }
@@ -346,10 +343,7 @@ void Foam::immersedBoundaryFvMesh::makeIbFacesHitAndSamplingPoints(const label& 
         }
         else
         {
-            FatalErrorIn
-                (
-                    "Foam::bool Foam::immersedBoundaryFvMesh::makeIbFacesHitAndSamplingPoints"
-                )   << "face " << faceID<< " at location " << this->faceCentres()[faceID]
+            FatalErrorInFunction   << "face " << faceID<< " at location " << this->faceCentres()[faceID]
                     <<" does not has hit point on object "<< objectNames(objectID)
                     << abort(FatalError);
         }

@@ -367,10 +367,9 @@ void Foam::immersedBoundaryFvMesh::kEpsilonCorrection
     }
 
 
-    wallShearStressListPtr_->set
-    (
+    wallShearStressListPtr_->set(
         objectID,
-        tauWall
+        new vectorField(tauWall)
     );
 
 
@@ -738,16 +737,14 @@ void Foam::immersedBoundaryFvMesh::kOmegaIbCorrection
     }
 
     // transfer wall shear stress to pointer
-    wallShearStressListPtr_->set
-    (
+    wallShearStressListPtr_->set(
         objectID,
-        tauWall
+        new vectorField(tauWall)
     );
     // transfer nut to pointer
-    nutListPtr_->set
-    (
+    nutListPtr_->set(
         objectID,
-        nutNew
+        new scalarField(nutNew)
     );
     
     if(debug)
@@ -1232,10 +1229,9 @@ void Foam::immersedBoundaryFvMesh::dynamicKEqnIBCorrection
     }
 
     // transfer wall shear stress to pointer
-    wallShearStressListPtr_->set
-    (
+    wallShearStressListPtr_->set(
         objectID,
-        tauWall
+        new vectorField(tauWall)
     );
 
     
@@ -1573,10 +1569,9 @@ void Foam::immersedBoundaryFvMesh::SmagorinskyCorrection
     }
 
     // here tauWall is only
-    wallShearStressListPtr_->set
-    (
+    wallShearStressListPtr_->set(
         objectID,
-        tauWall
+        new vectorField(tauWall)
     );
 
     hitPointExportToMesh("yPlus",ypd,objectID);
@@ -1934,10 +1929,9 @@ void Foam::immersedBoundaryFvMesh::SmagorinskyGhostCorrection
     }
 
     // here tauWall is only
-    wallShearStressListPtr_->set
-    (
+    wallShearStressListPtr_->set(
         objectID,
-        tauWall
+        new vectorField(tauWall)
     );
 
     hitPointExportToMesh("kNew",kNew,objectID);

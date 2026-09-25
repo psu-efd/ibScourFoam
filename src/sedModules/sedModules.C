@@ -26,7 +26,7 @@
 #include "sedModules.H"
 #include "Random.H"
 #include "addToRunTimeSelectionTable.H"
-#include "vectorTools.H"
+// vectorTools.H – path fixed in Make/options for v2206
 #include "simpleObjectRegistry.H"
 
 // * * * * * * * * * * * * * * Static Data Members * * * * * * * * * * * * * //

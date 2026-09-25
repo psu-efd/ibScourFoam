@@ -91,23 +91,13 @@ Foam::fv::ibMeanVelocityForce::ibMeanVelocityForce
     dGradP_(0.0),
     flowDir_(Ubar_/mag(Ubar_)),
     relaxation_(coeffs_.lookupOrDefault<scalar>("relaxation", 1.0)),
-    rAPtr_(NULL)
+    rAPtr_(nullptr)
 {
     coeffs_.lookup("fieldNames") >> fieldNames_;
 
     if (fieldNames_.size() != 1)
     {
-        FatalErrorIn
-        (
-            "Foam::fv::ibMeanVelocityForce::"
-            "ibMeanVelocityForce"
-            "("
-                "const word&, "
-                "const word&, "
-                "const dictionary&, "
-                "const fvMesh&"
-            ")"
-        )   << "Source can only be applied to a single field.  Current "
+        FatalErrorInFunction   << "Source can only be applied to a single field.  Current "
             << "settings are:" << fieldNames_ << exit(FatalError);
     }
 

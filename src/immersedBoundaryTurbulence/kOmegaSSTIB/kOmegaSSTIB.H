@@ -38,7 +38,7 @@ SourceFiles
 #ifndef kOmegaSSTIB_H
 #define kOmegaSSTIB_H
 
-#include "kOmegaSSTBase.H"
+#include "kOmegaSST.H"
 #include "RASModel.H"
 #include "eddyViscosity.H"
 

@@ -149,7 +149,7 @@ void Foam::dualPatch::makeDualPatch()
         dualFace.shrink();
         face newDualFace(dualFace);
         // check reverse
-        scalar re = pointNormals[I]&newDualFace.normal(dualPoints);
+        scalar re = pointNormals[I]&newDualFace.unitNormal(dualPoints);
         if(re<0)
         {
             newDualFace = newDualFace.reverseFace();
@@ -171,10 +171,7 @@ void Foam::dualPatch::makeDualPatch()
         mFFTDP[I] = dualPatchPtr_->whichPoint(I); // from global to local
         if(mFFTDP[I]<0 and debug)
         {
-            WarningIn
-            (
-                "dualPatch::makeDualPatch() const"
-            )   << " mapFromFacesToDualPoints: face "<<I
+            WarningInFunction   << " mapFromFacesToDualPoints: face "<<I
                 <<" does not have corresponding dual point"
                 <<endl;
         }

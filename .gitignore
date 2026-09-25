@@ -84,3 +84,11 @@ doc/Doxygen/DTAGS
 /tutorialsTest
 
 
+
+# Tutorial run artifacts (v2206 port)
+build.log
+log.*
+tutorials/*/constant/polyMesh/
+tutorials/*/dynamicCode/
+tutorials/*/processor*/
+tutorials/Roulund2005_scour_parallel/

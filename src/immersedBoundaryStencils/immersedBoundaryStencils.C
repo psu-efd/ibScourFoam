@@ -24,9 +24,10 @@
 \*---------------------------------------------------------------------------*/
 
 #include "immersedBoundaryStencils.H"
+#include "processorPolyPatch.H"
 #include "Random.H"
 #include "addToRunTimeSelectionTable.H"
-#include "vectorTools.H"
+// vectorTools.H – path fixed in Make/options for v2206
 #include "simpleObjectRegistry.H"
 #include "SortableList.H"
 
@@ -74,7 +75,7 @@ gammaWeight_c_(dict.lookupOrDefault<scalar>("gammaWeight_c",0.))
 Info <<" set immersedBoundaryStencils "<<endl;
     if(cellIDList.size()!=points.size())
     {
-        FatalErrorIn("immersedBoundaryStencils::immersedBoundaryStencils() const")
+        FatalErrorInFunction
             << "size of cellIDList "<<cellIDList.size()
             <<" does not equal to "
             << "size of points "<<points.size()
@@ -289,10 +290,7 @@ void Foam::immersedBoundaryStencils::makeStencils() const
 
                     if (nearestCellID == -1)
                     {
-                        FatalErrorIn
-                        (
-                            "immersedBoundaryFvMesh::makeIbCellCells() const"
-                        ) << "Can't find nearest cell."
+                        FatalErrorInFunction << "Can't find nearest cell."
                             << abort(FatalError);
                     }
 
@@ -833,10 +831,7 @@ void Foam::immersedBoundaryStencils::makeStencilsWeights() const
         if (sumW < SMALL and debug==2)
         {
             counter++;
-            InfoIn
-            (
-                "void immersedBoundaryStencils::makeStencilsWeights()"
-            )   << "Insufficient live neighbourhood for "<<name()<<" point "
+            InfoInFunction   << "Insufficient live neighbourhood for "<<name()<<" point "
                 << points[cellI] << "." << nl
                 << ibcc[cellI].size()<<tab
                 << "Please adjust radiusFactor, distFactor or "

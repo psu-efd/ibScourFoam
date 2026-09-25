@@ -22,6 +22,9 @@
      along with OpenFOAM.  If not, see <http://www.gnu.org/licenses/>.
 
 \*---------------------------------------------------------------------------*/
+#include "mathematicalConstants.H"
+#include "unitConversion.H"
+#include "vectorTools.H"
 
 // * * * * * * * * * * * * * Private Member Functions  * * * * * * * * * * * //
 

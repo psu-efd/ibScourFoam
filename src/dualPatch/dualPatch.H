@@ -37,10 +37,8 @@
 
 #include "treeBoundBox.H"
 #include "triSurfaceSearch.H"
-#include "surfaceIntersection.H"
 #include "indexedOctree.H"
 #include "treeDataTriSurface.H"
-#include "edgeIntersections.H"
 #include "treeDataEdge.H"
 #include "treeDataPrimitivePatch.H"
 #include "DynamicList.H"
@@ -63,8 +61,8 @@ class dualPatch
 public:
     typedef treeDataPrimitivePatch<polyPatch> patchTreeData;
     typedef indexedOctree<patchTreeData> patchSearch;
-    typedef PrimitivePatch<face, ::Foam::List, pointField, point> PPatch;
-    typedef PrimitivePatchInterpolation< PrimitivePatch<face, ::Foam::List, pointField, point> >  PPatchInterpolation;
+    typedef PrimitivePatch<::Foam::List<face>, pointField> PPatch;
+    typedef PrimitivePatchInterpolation< PrimitivePatch<::Foam::List<face>, pointField> >  PPatchInterpolation;
 
 private:
  // Private member data

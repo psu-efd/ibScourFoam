@@ -299,7 +299,7 @@ void kOmegaSSTSASIB<BasicTurbulenceModel>::correct()
         ==
         alpha()*rho()*this->Pk(G)
         - fvm::SuSp((2.0/3.0)*alpha()*rho()*divU, this->k_)
-        - fvm::Sp(alpha()*rho()*this->epsilonByk(F1, F23),this->k_)
+        - fvm::Sp(alpha()*rho()*this->beta1_*this->omega_,this->k_)
         + this->kSource()
         + fvOptions(alpha, rho, this->k_)
     );
@@ -321,7 +321,7 @@ void kOmegaSSTSASIB<BasicTurbulenceModel>::correct()
     fvOptions.correct(this->k_);
     bound(this->k_, this->kMin_);
    
-    this->correctNut(S2, F23);
+    this->correctNut(S2);
     
     
     ibMesh.nutCorrection();

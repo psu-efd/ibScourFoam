@@ -420,10 +420,11 @@ void Foam::immersedBoundaryFvMesh::makeTriAddressing
         proTriFacesInMeshListPtr_->set
         (
          objectID,
-             new labelListList
-             (
-              	proTri
-             )
+             [&](){
+                labelListList result(proTri.size());
+                forAll(proTri, i) result[i] = labelList(proTri[i]);
+                return new labelListList(result);
+            }()
         );
     }
 
@@ -601,16 +602,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromIBHitToTriFace
 {
     if (ibValues.size() != ibCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromIBHitToTriFace\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "triangulated surface for object " << objectNames(objectID) << nl
             << "Field size = " << ibValues.size()
             << " IB points size = " << ibCellsList()[objectID].size()
@@ -766,16 +758,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromGHOSTHitToTriFace
 {
     if (ghostValues.size() != ghostCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromGHOSTHitToTriFace\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "triangulated surface for object " << objectNames(objectID) << nl
             << "Field size = " << ghostValues.size()
             << " IB points size = " << ghostCellsList()[objectID].size()
@@ -834,16 +817,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromIBHitToTriEdge
 {
     if (ibValues.size() != ibCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromIBHitToTriEdge\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "triangulated surface for object " << objectNames(objectID) << nl
             << "Field size = " << ibValues.size()
             << " IB points size = " << ibCellsList()[objectID].size()
@@ -907,16 +881,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromGHOSTHitToTriEdge
 {
     if (ghostValues.size() != ghostCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromGHOSTHitToTriEdge\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "triangulated surface for object " << objectNames(objectID) << nl
             << "Field size = " << ghostValues.size()
             << " IB points size = " << ghostCellsList()[objectID].size()
@@ -974,16 +939,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromIBHitToDualEdge
 {
     if (ibValues.size() != ibCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromIBHitToDualEdge\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "dual surface for object " << objectNames(objectID) << nl
             << "Field size = " << ibValues.size()
             << " IB points size = " << ibCellsList()[objectID].size()
@@ -1040,16 +996,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromGHOSTHitToDualEdge
 {
     if (ghostValues.size() != ghostCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromGHOSTHitToDualEdge\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "dual surface for object " << objectNames(objectID) << nl
             << "Field size = " << ghostValues.size()
             << " IB points size = " << ghostCellsList()[objectID].size()
@@ -1101,16 +1048,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromIBHitToDualFace
 {
     if (ibValues.size() != ibCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromIBHitToDualFace\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "dual surface for object " << objectNames(objectID) << nl
             << "Field size = " << ibValues.size()
             << " IB points size = " << ibCellsList()[objectID].size()
@@ -1152,16 +1090,7 @@ Foam::Field<Type> Foam::immersedBoundaryFvMesh::mapFromGHOSTHitToDualFace
 {
     if (ghostValues.size() != ghostCellsList()[objectID].size())
     {
-        FatalErrorIn
-        (
-            "template<class Type>\n"
-            "Foam::Field<Type>\n"
-            "immersedBoundaryFvMesh::mapFromGHOSTHitToDualFace\n"
-            "(\n"
-            "    const Field<Type>& ibValues,\n"
-            "    label objectID\n"
-            ") const"
-        )   << "Field size does not correspond to size of IB points "
+        FatalErrorInFunction   << "Field size does not correspond to size of IB points "
             << "dual surface for object " << objectNames(objectID) << nl
             << "Field size = " << ghostValues.size()
             << " IB points size = " << ghostCellsList()[objectID].size()
