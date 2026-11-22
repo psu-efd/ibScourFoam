@@ -1,0 +1,2 @@
+// Bed surface constant/triSurface/bed.stl, sampled along vertical lines
+initialSurface  "bed.stl";

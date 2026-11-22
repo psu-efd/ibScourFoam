@@ -1,0 +1,27 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      C;
+}
+
+dimensions      [0 0 0 0 0 0 0];
+
+internalField   uniform 0;
+
+boundaryField
+{
+    inlet
+    {
+        type            mapped;
+        value           uniform 0;
+        interpolationScheme cell;
+        setAverage      false;
+        average         0;
+    }
+    outlet          { type zeroGradient; }
+    frontAndBack    { type zeroGradient; }
+    top             { type zeroGradient; }
+    bottom          { type zeroGradient; }
+}

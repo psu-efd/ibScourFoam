@@ -1,3 +1,17 @@
-wclean src
-wclean solvers/ibScourFoam
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+#------------------------------------------------------------------------------
 
+# Suspended-sediment library and solver
+wclean libso src/suspendedSediment
+wclean solvers/suspendedSedimentFoam
+
+# Immersed-boundary library (libibScour) and solvers
+wclean libso src/ibScour
+wclean solvers/ibScourPimpleFoam
+wclean solvers/ibScourInterFoam
+
+# Post-processing utilities
+wclean utilities/kBudget
+
+#------------------------------------------------------------------------------

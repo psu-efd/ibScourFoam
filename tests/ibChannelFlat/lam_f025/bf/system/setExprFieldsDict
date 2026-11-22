@@ -1,0 +1,31 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setExprFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Initial field: laminar open-channel profile (half Poiseuille,
+// depth-mean velocity 0.01 m/s) over the local depth; zero below the bed
+
+expressions
+(
+    U
+    {
+        field       U;
+        variables   ( "zb = 0.000625 + (pos().y() - 0.0375)*0" "h = 0.05 - zb" "y = pos().z() - zb" "eta = min(max(y/h, 0), 1)" );
+        expression  #{ vector(y > 0 ? 1.5*0.01*(2*eta - sqr(eta)) : 0, 0, 0) #};
+        dimensions  [0 1 -1 0 0 0 0];
+    }
+);
+
+// ************************************************************************* //

@@ -1,0 +1,27 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      immersedBoundaryDict;
+}
+solids                      // the fixed bed as an immersed plane
+{
+    bed
+    {
+        type            plane;
+        point           (0 0.075 0.00125);
+        normal          (0 -0 1);
+    }
+}
+
+wallModel
+{
+    samplingFactor  1;
+
+    wallLaw
+    {
+        type            spalding;
+    }
+}

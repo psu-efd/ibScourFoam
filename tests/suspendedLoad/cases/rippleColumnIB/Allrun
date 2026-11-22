@@ -1,0 +1,70 @@
+#!/bin/bash
+# Ripple suspension over an immersed bed (ibBedExchange mode ripple, Nielsen
+# 1992). The steady flume flow of hrnColumnIB (H 0.067 m, ks 9.9 mm) is frozen
+# after 400 s; sand d 0.2 mm, ws 0.025 m/s, ripples eta 1 cm, lambda 5 cm, so
+# L_s = 1.4 cm and eps_s = ws L_s = 3.5e-4 m2/s exceeds the eddy viscosity of
+# the flow everywhere (the whole column is in the mixing layer). With a
+# steady shear the peak Shields number of the 10 s window is the steady value
+# theta, and the equilibrium is C0 exp(-z/L_s), C0 = 0.005 (crest theta)^3,
+# crest = 1/(1 - pi eta/lambda)^2. Checks after 2000 s of frozen flow:
+# equilibrium (|E - D| < 1e-3 E), C_b* = C0 from the logged theta', the wall
+# cell C0 exp(-y_c/L_s) within 1e-3 (the exchange equilibrium), the cell-to-cell
+# ratios of the upwind settling flux 1/(1 + ws dz/eps_s) within 1e-3, C >= 0.
+# (Upwind settling lengthens the decay to dz/ln(1 + ws dz/eps_s) = 15.0 mm.)
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+ibScourPimpleFoam > log.flow 2>&1 || { echo "flow phase failed"; exit 1; }
+sed -i 's/^solveFlow       true;/solveFlow       false;/' constant/immersedBoundaryDict
+sed -i 's/^solveSediment   no;.*/solveSediment   yes;/' constant/sedimentProperties
+sed -i 's/^endTime         400;/endTime         2400;/; s/^deltaT          0.02;/deltaT          0.5;/; s/^writeInterval   400;/writeInterval   2000;/; s/^adjustTimeStep  yes;/adjustTimeStep  no;/' system/controlDict
+cp 0/C 400/C
+ibScourPimpleFoam > log.sediment 2>&1 || { echo "sediment phase failed"; exit 1; }
+# writeCellCentres writes a vector field "C": keep the concentration
+cp 2400/C 2400/Csediment
+postProcess -func writeCellCentres -time 2400 > log.cellCentres 2>&1
+mv 2400/C 2400/cellCentres && mv 2400/Csediment 2400/C
+# restore the dictionaries for the next run
+sed -i 's/^solveFlow       false;/solveFlow       true;/' constant/immersedBoundaryDict
+sed -i 's/^solveSediment   yes;/solveSediment   no;         \/\/ phase A: flow only (Allrun switches it on)/' constant/sedimentProperties
+sed -i 's/^endTime         2400;/endTime         400;/; s/^deltaT          0.5;/deltaT          0.02;/; s/^writeInterval   2000;/writeInterval   400;/' system/controlDict
+python3 - <<'PY'
+import math, re
+log = open("log.sediment").read()
+E = [float(m) for m in re.findall(r"entrainment ([0-9.e+-]+)", log)]
+D = [float(m) for m in re.findall(r"deposition ([0-9.e+-]+) m3", log)]
+cmin = min(float(m) for m in re.findall(r"C min/max ([0-9.e+-]+) /", log))
+cb = float(re.findall(r"C_b\* max ([0-9.e+-]+)", log)[-1])
+th = float(re.findall(r"peak theta' max ([0-9.e+-]+)", log)[-1])
+crest = 1/(1 - math.pi*0.01/0.05)**2
+c0 = 0.005*(crest*th)**3
+Ls = 0.014
+
+def field(path):
+    t = open(path).read()
+    i = t.index("internalField")
+    j = t.index("(", i)
+    k = t.index("\n)", j)
+    return t[j+1:k].replace("(", " ").replace(")", " ").split()
+
+C = [float(v) for v in field("2400/C")]
+cx = [float(v) for v in field("2400/Cx")]
+cz = [float(v) for v in field("2400/Cz")]
+eps = 0.025*Ls
+# one column (the flow is uniform in x and y): the wall cell and the
+# face-to-face ratios of the upwind discretisation of the settling flux,
+# C_up/C_low = 1/(1 + ws dz/eps_s)
+x0 = sorted(set(round(v, 6) for v in cx))[len(set(round(v, 6) for v in cx))//2]
+col = sorted({(round(z, 7), c) for x, z, c in zip(cx, cz, C) if abs(x - x0) < 1e-6 and z > 0})
+z1, c1 = col[0]
+wall = c1/(c0*math.exp(-z1/Ls)) - 1
+ratio = max(abs((col[k+1][1]/col[k][1])*(1 + 0.025*(col[k+1][0] - col[k][0])/eps) - 1)
+            for k in range(len(col) - 1))
+cont = max(abs(c/(c0*math.exp(-z/Ls)) - 1) for z, c in col)
+eq = abs(E[-1] - D[-1])/E[-1]
+ok = eq < 1e-3 and abs(cb/c0 - 1) < 1e-6 and abs(wall) < 1e-3 and ratio < 1e-3 and cmin >= 0
+print(f"theta' {th:.4f}, C0 {c0:.4e} (C_b* {cb:.4e}), equilibrium |E-D|/E {eq:.1e}, "
+      f"wall cell vs C0 exp(-y_c/L_s) {100*wall:+.3f} %, upwind face ratios max dev {100*ratio:.3f} % "
+      f"({len(col)} cells; continuous exponential within {100*cont:.0f} %), C min {cmin:.1e}: "
+      f"{'PASS' if ok else 'FAIL'}")
+PY

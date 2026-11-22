@@ -1,0 +1,34 @@
+#!/bin/bash
+# Settling column with deposition through the bed (the
+# set-up): still water, H = 0.2 m, C0 = 1e-3, Stokes settling of d50 =
+# 33.35 um (ws = 1.000 mm/s), bed condition sedimentBedFlux mode
+# referenceLevel with C_b* = 0 (deposition D = ws C_f, no entrainment),
+# solver suspendedSedimentFoam. Kynch solution: deposit ws C0 t until H/ws =
+# 200 s, then C0 H. Checks (closed forms only): ws of the solver equals
+# Stokes to 1e-6; deposit at 100 s = ws C0 t within 1 %; final deposit =
+# C0 H within 1e-3; suspended volume below 1e-3 of the initial at 400 s;
+# budget error below 1e-10 of the initial volume.
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+suspendedSedimentFoam > log.suspendedSedimentFoam 2>&1 || { echo "solver failed"; exit 1; }
+python3 - <<'PY'
+import re
+nu, s, g, d = 1e-6, 2.65, 9.81, 3.3351e-5
+ws = (s - 1)*g*d*d/(18*nu); H, C0, A = 0.2, 1e-3, 1e-4
+V0 = C0*H*A
+log = open("log.suspendedSedimentFoam").read()
+wsLog = float(re.search(r"\|ws\| = ([0-9.e+-]+)", log).group(1))
+rows = [l.split() for l in open("postProcessing/bedExchange/0/sedimentBedExchange.dat") if l.strip() and not l.startswith("#")]
+t = [float(r[0]) for r in rows]; VC = [float(r[6]) for r in rows]; dep = [float(r[7]) for r in rows]; err = [abs(float(r[8])) for r in rows]
+d100 = dep[min(range(len(t)), key=lambda i: abs(t[i] - 100))]
+checks = [
+    (abs(wsLog/ws - 1) < 1e-6, f"ws {wsLog:.6e} vs Stokes {ws:.6e}"),
+    (abs(d100/(ws*C0*100*A) - 1) < 0.01, f"deposit at 100 s {d100:.4e} vs Kynch {ws*C0*100*A:.4e}"),
+    (abs(dep[-1]/V0 - 1) < 1e-3, f"final deposit {dep[-1]:.6e} vs C0 H A {V0:.6e}"),
+    (VC[-1]/V0 < 1e-3, f"suspended at the end {VC[-1]/V0:.2e} V0"),
+    (max(err)/V0 < 1e-10, f"max budget error {max(err)/V0:.1e} V0"),
+]
+for ok, msg in checks: print(("PASS " if ok else "FAIL ") + msg)
+print("PASS" if all(c[0] for c in checks) else "FAIL")
+PY

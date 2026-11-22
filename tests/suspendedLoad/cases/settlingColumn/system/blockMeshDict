@@ -1,0 +1,37 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Closed column of height H, one cell wide (empty sides)
+scale   1;
+H       0.2;    // m
+nz      200;
+
+vertices
+(
+    (0 0 0) (0.01 0 0) (0.01 0.01 0) (0 0.01 0)
+    (0 0 $H) (0.01 0 $H) (0.01 0.01 $H) (0 0.01 $H)
+);
+
+blocks ( hex (0 1 2 3 4 5 6 7) (1 1 $nz) simpleGrading (1 1 1) );
+
+boundary
+(
+    bed   { type wall; faces ((0 3 2 1)); }
+    top   { type wall; faces ((4 5 6 7)); }
+    sides { type empty; faces ((0 1 5 4) (2 3 7 6) (0 4 7 3) (1 2 6 5)); }
+);
+
+// ************************************************************************* //

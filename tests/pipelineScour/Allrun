@@ -1,0 +1,46 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: pipelineScour (half-buried horizontal cylinder, ibScourPimpleFoam)
+#
+# Ready-made case folders <mesh>_<mode>:
+#     mesh  2d   O-grid slab of 2 cells with symmetry sides
+#           2d1  true 2D O-grid (one cell, empty sides)
+#           3d   finite cylinder, snappyHexMesh, 8 ranks
+#     mode  hydro  fixed bed for 3 s
+#           scour  fixed bed for 1 s, then the mobile bed (morphological
+#                  factor 20) for 2 s
+# Each is copied to $IBS_RUN_ROOT/pipelineScour/<variant>, run there (its own
+# Allrun) and checked by check.py.
+#
+# Usage:
+#     ./Allrun [variant ...]      (default: 2d_hydro 2d_scour)
+# -----------------------------------------------------------------------------
+
+cd "$(dirname "$0")" || exit 1
+HERE=$PWD
+# shellcheck source=../common/runFunctions.sh
+. ../common/runFunctions.sh
+ibs_load_env || exit 1
+
+ROOT=$IBS_RUN_ROOT/pipelineScour
+if [ $# -gt 0 ]; then variants=("$@"); else variants=(2d_hydro 2d_scour); fi
+
+run_variant()
+{
+    local dir=$ROOT/$1
+    ibs_run_case "$HERE/$1" "$dir"
+    ibs_view "$dir"
+    $IBS_PYTHON "$HERE/check.py" --run-dir "$dir" > "$dir/log.check" 2>&1 || true
+    tail -1 "$dir/log.check"
+}
+
+for variant in "${variants[@]}"
+do
+    case "$variant" in
+        3d_*) wait; run_variant "$variant" ;;      # parallel run: one at a time
+        *) ibs_throttle; run_variant "$variant" & ;;
+    esac
+done
+wait
+
+#------------------------------------------------------------------------------

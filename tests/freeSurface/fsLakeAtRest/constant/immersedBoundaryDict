@@ -1,0 +1,42 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+
+// Sloping bed from z = 0.05 (x = 0) to z = 0.15 (x = 1) and a cylinder of
+// radius 4 cm at (0.5, 0.22), both immersed; the water surface is at 0.3.
+cutFaces        false;
+wallSink        tangential;
+
+solids
+{
+    bed
+    {
+        type            plane;
+        point           (0 0 0.05);
+        normal          (-0.1 0 1);
+    }
+    cylinder
+    {
+        type            cylinder;
+        point1          (0.5 -1 0.22);
+        point2          (0.5  1 0.22);
+        radius          0.04;
+    }
+}
+
+wallModel
+{
+    mode            stress;
+    wallLaw         { type laminar; }
+}

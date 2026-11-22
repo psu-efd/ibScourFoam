@@ -1,0 +1,36 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: T2 sandSlideRelax
+#
+# Conical pit/mound steeper than the angle of repose; the flow is not solved
+# and only the sand slide changes the bed (ibScourPimpleFoam). Each variant
+# is a ready-made case folder (<variant>/Allrun); it is copied to
+# $IBS_RUN_ROOT/sandSlideRelax/<variant>, run there and checked (check.py,
+# metrics.json).
+#
+# Usage:
+#     ./Allrun [variant ...]        (default: pit45 pit60 mound45)
+# -----------------------------------------------------------------------------
+
+cd "$(dirname "$0")" || exit 1
+HERE=$PWD
+# shellcheck source=../common/runFunctions.sh
+. ../common/runFunctions.sh
+ibs_load_env || exit 1
+
+if [ $# -gt 0 ]; then variants=("$@"); else variants=(pit45 pit60 mound45); fi
+
+for variant in "${variants[@]}"
+do
+    ibs_throttle
+    (
+        dir=$IBS_RUN_ROOT/sandSlideRelax/$variant
+        ibs_run_case "$HERE/$variant" "$dir"
+        ibs_view "$dir"
+        $IBS_PYTHON "$HERE/check.py" --run-dir "$dir" > "$dir/log.check" 2>&1 || true
+        tail -1 "$dir/log.check"
+    ) &
+done
+wait
+
+#------------------------------------------------------------------------------

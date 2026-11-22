@@ -1,0 +1,23 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sedimentProperties;
+}
+
+// Rouse equilibrium in the scales of Liu & Nayamatullah (2014): h = 1 m,
+// u* = 1 m/s, parabolic K = kappa Z (1 - Z), Vs = 0.2 (Rouse number
+// Vs/kappa = 0.4878), Cheng (1984) Robin condition at Z = A = 0.05
+solveFlow       no;
+solveSediment   yes;
+diffusivity     field;          // DC = K(Z) from 0/DC
+ScC             1;
+sigmaC          1;
+d50             1e-4;           // not used
+s               2.65;
+settlingVelocityModel constant;
+ws              0.2;
+referenceConcentrationModel constant;
+Cb              1.0;
+delta           0;

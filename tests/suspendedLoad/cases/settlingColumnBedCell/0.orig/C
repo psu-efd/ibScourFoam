@@ -1,0 +1,32 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      C;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+dimensions      [0 0 0 0 0 0 0];
+internalField   uniform 1e-3;
+
+boundaryField
+{
+    bed
+    {
+        type        sedimentBedFlux;
+        mode        nearestCell;        // E = ws Cb* = 0, D = ws C_P (wall cell)
+        value       uniform 1e-3;
+    }
+    top             { type zeroGradient; }
+    sides           { type empty; }
+}
+
+// ************************************************************************* //

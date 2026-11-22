@@ -1,0 +1,32 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+
+application     suspendedSedimentFoam;
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         40;
+deltaT          0.01;
+writeControl    runTime;
+writeInterval   40;
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  10;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable no;
+
+functions
+{
+    bedExchange
+    {
+        type        sedimentBedExchange;
+        libs        (suspendedSediment);
+        writeFields no;
+    }
+}

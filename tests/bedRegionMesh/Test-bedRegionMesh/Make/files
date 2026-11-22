@@ -1,0 +1,3 @@
+Test-bedRegionMesh.C
+
+EXE = $(FOAM_USER_APPBIN)/Test-bedRegionMesh

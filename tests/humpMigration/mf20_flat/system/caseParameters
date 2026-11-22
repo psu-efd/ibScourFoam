@@ -1,0 +1,35 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      caseParameters;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+x0              0;
+x1              1.2;
+y0              0;
+y1              0.02;
+z0              -0.03;
+z1              0.1;
+nx              240;
+ny              4;
+nz              26;
+xFluid          1.08;
+yFluid          0.01;
+zFluid          0.0975;
+deltaT          0.01;
+endTime         18;
+writeInterval   0.5;
+simulationType  RAS;
+RASModel        kOmegaSST;
+
+// ************************************************************************* //

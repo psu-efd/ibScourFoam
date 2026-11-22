@@ -1,0 +1,35 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+
+// The floor of the dam-break box as an immersed plane at z = 0 (on a cell
+// face: the first fluid row is the IB row, the two rows below are solid)
+cutFaces        false;
+wallSink        tangential;
+
+solids
+{
+    floor
+    {
+        type            plane;
+        point           (0 0 0);
+        normal          (0 0 1);
+    }
+}
+
+wallModel
+{
+    mode            stress;
+    wallLaw         { type laminar; }
+}

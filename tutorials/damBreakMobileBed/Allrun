@@ -1,0 +1,67 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: dam break over a mobile bed (Soares-Frazao et al. 2012), ibScourInterFoam
+#
+# Generates, meshes and runs one configuration of the IAHR benchmark in a
+# run directory (default ./run_case<CASE>_<MESH>):
+#
+#     CASE  1: dry sand bed downstream of the gate (default)
+#           2: sand bed under 0.15 m of water
+#     MESH  coarse: 5 cm over the sand and the breach, 0.49 M cells (default)
+#           fine:   2.5 cm, 1.97 M cells
+#     NP    MPI ranks (default 32; the fine mesh was run on 64)
+#
+# Usage:
+#     ./Allrun                      # Case 1, coarse mesh, 32 ranks
+#     CASE=2 MESH=fine NP=64 ./Allrun
+#
+# Requirements: OpenFOAM v2606 with ibScourFoam built (./Allwmake at the
+# repository root), Python >= 3.8 ($PYTHON, default python3) for make_case.py.
+# 20 s of flow take about 15 min on 32 ranks (coarse) and 50 min on 64 ranks
+# (fine) on Intel Ice Lake nodes.
+# -----------------------------------------------------------------------------
+
+cd "${0%/*}" || exit 1
+HERE=$PWD
+CASE=${CASE:-1}
+MESH=${MESH:-coarse}
+NP=${NP:-32}
+PYTHON=${PYTHON:-python3}
+RUN=${RUN_DIR:-$HERE/run_case${CASE}_${MESH}}
+
+case "$MESH" in
+    coarse) res=(--dx 0.05 --dx-res 0.10 --dx-tank 0.20) ;;
+    fine)   res=(--dx 0.025 --dx-res 0.05 --dx-tank 0.10) ;;
+    *) echo "MESH must be coarse or fine" >&2; exit 1 ;;
+esac
+if [ -e "$RUN" ]
+then
+    echo "$RUN exists; remove it (./Allclean) or set RUN_DIR" >&2
+    exit 1
+fi
+set -e
+
+# Case set-up: Engelund-Fredsoe bed load with the slope-corrected critical
+# Shields number 0.047, k-omega SST, rough wall law ks = 2.5 d50
+$PYTHON make_case.py setup --run-dir "$RUN" --case "$CASE" "${res[@]}" \
+    --bed-load engelundFredsoe --critical-shields 0.047 \
+    --end-time 20 --write-interval 0.5 --n-procs "$NP" > "$HERE/log.setup.$CASE.$MESH"
+cd "$RUN"
+blockMesh > log.blockMesh 2>&1
+cp -r 0.orig 0
+setFields > log.setFields 2>&1                       # reservoir and Case 2 water
+
+# The bed (zb) and the rigid floor (zRigid) are expressions in
+# constant/immersedBoundaryDict; the bed area mesh is written by makeFaMesh
+decomposePar -force -no-finite-area > log.decomposePar 2>&1
+mpirun -np "$NP" --bind-to core makeFaMesh -parallel > log.makeFaMesh 2>&1
+
+mpirun -np "$NP" --bind-to core ibScourInterFoam -parallel > log.ibScourInterFoam 2>&1
+
+# reconstructPar of OpenFOAM v2606 crashes on finite-area fields;
+# redistributePar reconstructs the volume and the bed fields
+mpirun -np "$NP" --bind-to core redistributePar -reconstruct -parallel \
+    > log.redistributePar 2>&1
+echo "finished: $RUN (gauges in postProcessing/gauges, bed in postProcessing/bed)"
+
+#------------------------------------------------------------------------------

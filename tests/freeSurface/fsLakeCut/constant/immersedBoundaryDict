@@ -1,0 +1,69 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+
+// Sloping bed from z = 0.05 (x = 0) to z = 0.15 (x = 1) and a cylinder of
+// radius 4 cm at (0.5, 0.22), both immersed; the water surface is at 0.3.
+// fsLakeCut: fsLakeAtRest with the sloping bed as a height-field bed with
+// cut-face apertures (cutFaces true) instead of a blocked-face plane: the
+// water must stay at rest over the apertures (balance of the gravity and
+// pressure fluxes on the open parts of the cut faces). The bed elevation
+// z_b = 0.05 + 0.1 x is the initialElevation expression below.
+cutFaces        true;
+wallSink        tangential;
+
+solids
+{
+    cylinder
+    {
+        type            cylinder;
+        point1          (0.5 -1 0.22);
+        point2          (0.5  1 0.22);
+        radius          0.04;
+    }
+}
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation            // sloping bed z_b = 0.05 + 0.1 x
+    {
+        type        expression;
+        expression  #{ 0.05 + 0.1*pos().x() #};
+    }
+    openBoundaries  ();
+    grainDiameter   0.001;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+    bedSlope        { model kochFlokstra; alpha 1.5; }
+    morphStartTime  1000;           // the bed does not move
+    morphFactor     1;
+    bedCourant      0.2;
+    maxBedChange    2e-3;
+    updateDistance  1e-3;
+    sandSlide       false;
+    wetThreshold    0.5;
+    seepage         { type none; }
+}
+
+wallModel
+{
+    mode            stress;
+    wallLaw         { type laminar; }
+}

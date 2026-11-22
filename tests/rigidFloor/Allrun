@@ -1,0 +1,28 @@
+#!/bin/bash
+# Non-erodible floor: a sand patch on a rigid floor with a rigid
+# sill, carried downstream by a uniform prescribed bed shear onto the bare
+# floor. Checks: z_b >= z_r everywhere at every write, the sill top
+# never lowered, the sand volume above the floor
+# conserved to round-off, no rigid-floor clamp (round-off), Exner
+# volume error at round-off, part of the patch stripped to the floor.
+# Usage: ./Allrun [-parallel]
+cd "${0%/*}" || exit 1
+PYTHON=${IBS_PYTHON:-python3}
+for d in [0-9]*; do [[ $d =~ ^[0-9.eE+-]+$ ]] && rm -rf "./$d"; done
+rm -rf processor* log.* postProcessing constant/finite-area
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+cp -r 0.orig 0
+# bed and rigid floor: expressions in constant/immersedBoundaryDict
+if [ "$1" = "-parallel" ]
+then
+    decomposePar -force -no-finite-area > log.decomposePar 2>&1 || { echo "decomposePar failed"; exit 1; }
+    mpirun -np 4 --bind-to none makeFaMesh -parallel > log.makeFaMesh 2>&1 || { echo "makeFaMesh failed"; exit 1; }
+    mpirun -np 4 --map-by core --bind-to core ibScourPimpleFoam -parallel > log.ibScourPimpleFoam 2>&1
+    mpirun -np 4 --bind-to none redistributePar -reconstruct -parallel > log.redistributePar 2>&1
+else
+    makeFaMesh > log.makeFaMesh 2>&1 || { echo "makeFaMesh failed"; exit 1; }
+    ibScourPimpleFoam > log.ibScourPimpleFoam 2>&1
+fi
+grep "non-erodible floor" log.ibScourPimpleFoam
+grep "^Bed: MF" log.ibScourPimpleFoam | tail -1 | cut -c1-260
+$PYTHON check.py .

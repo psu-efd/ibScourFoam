@@ -1,0 +1,14 @@
+#!/bin/bash
+# fsLakeAtRest: water at rest over a sloping immersed bed with an immersed
+# cylinder. Pass: the spurious velocity in the water stays below 1e-6 m/s
+# and the pressure on the cylinder is hydrostatic. Serial, under a minute.
+# Usage: ./Allrun [MULES|isoAdvector]
+cd "${0%/*}" || exit 1
+scheme=${1:-MULES}
+rm -rf 0 [1-9]* 0.[0-9]* log.* postProcessing
+cp -r 0.orig 0
+sed -i "s/^\(\s*alphaScheme\s*\)[A-Za-z]*;/\1$scheme;/" system/fvSolution
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+setFields > log.setFields 2>&1 || { echo "setFields failed"; exit 1; }
+ibScourInterFoam > log.ibScourInterFoam 2>&1
+python3 check.py

@@ -1,0 +1,95 @@
+/*---------------------------------------------------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     |
+    \\  /    A nd           | www.openfoam.com
+     \\/     M anipulation  |
+-------------------------------------------------------------------------------
+    Copyright (C) 2026 ibScourFoam developers (Penn State)
+-------------------------------------------------------------------------------
+License
+    This file is part of ibScourFoam, built on OpenFOAM.
+
+    ibScourFoam is free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    ibScourFoam is distributed in the hope that it will be useful, but
+    WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+    General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with ibScourFoam.  If not, see <http://www.gnu.org/licenses/>.
+
+Class
+    Foam::seepageModels::noSeepage
+
+Description
+    No seepage effect on sediment mobility (type 'none', the default).
+
+SourceFiles
+    noSeepage.C
+
+\*---------------------------------------------------------------------------*/
+
+#ifndef Foam_noSeepage_H
+#define Foam_noSeepage_H
+
+#include "seepageModel.H"
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+namespace Foam
+{
+namespace seepageModels
+{
+
+/*---------------------------------------------------------------------------*\
+                          Class noSeepage Declaration
+\*---------------------------------------------------------------------------*/
+
+class noSeepage
+:
+    public seepageModel
+{
+public:
+
+    //- Runtime type information
+    TypeName("none");
+
+
+    // Constructors
+
+        //- Construct from dictionary and the critical gradient
+        noSeepage(const dictionary& dict, const scalar iCrit)
+        :
+            seepageModel(dict, iCrit)
+        {}
+
+
+    //- Destructor
+    virtual ~noSeepage() = default;
+
+
+    // Member Functions
+
+        virtual bool active() const { return false; }
+
+        virtual scalar thetaCFactor(const scalar) const { return 1; }
+
+        virtual scalar reposeFactor(const scalar) const { return 1; }
+};
+
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+} // End namespace seepageModels
+} // End namespace Foam
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+#endif
+
+// ************************************************************************* //

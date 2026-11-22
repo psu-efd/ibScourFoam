@@ -1,0 +1,68 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: bedInput, the bed-level input and the finite-area mesh on disk
+#
+# Bed-only runs (no flow, zero shear, 2 steps) of a 0.2 x 0.2 m box with
+# z_b = 0.01 sin(pi x/0.1) cos(pi y/0.1); check.py compares the written bed
+# with the analytic level at the floor-face centres.
+#
+#   expression  initialElevation as an expression                  (exact)
+#   points      mappedFile: 1288 scattered survey points, planar   (interp.)
+#   surface     initialSurface: STL of the bed                     (interp.)
+#   rigid       expression bed and rigidElevation 2 cm below it    (exact)
+#   faMesh      expression, finite-area mesh written by makeFaMesh (exact)
+#   parallel    faMesh on 4 ranks: decomposePar, makeFaMesh -parallel,
+#               redistributePar -reconstruct (stock tools only)    (exact)
+#
+# Usage: ./Allrun [variant ...]     (default: all; runs in ./run/<variant>)
+# -----------------------------------------------------------------------------
+
+cd "${0%/*}" || exit 1
+HERE=$PWD
+PYTHON=${IBS_PYTHON:-python3}
+NP=4
+if [ $# -gt 0 ]; then variants=("$@"); else
+    variants=(expression points surface rigid faMesh parallel); fi
+
+for v in "${variants[@]}"
+do
+    d=$HERE/run/$v
+    rm -rf "$d" && mkdir -p "$d"
+    cp -r 0.orig constant system "$d"/
+    cp -r 0.orig "$d"/0
+    case "$v" in
+        points)   input=points; cp -r inputs/boundaryData "$d"/constant/ ;;
+        surface)  input=surface; mkdir -p "$d"/constant/triSurface
+                  cp inputs/bed.stl "$d"/constant/triSurface/ ;;
+        rigid)    input=rigid ;;
+        expression|faMesh|parallel) input=expression ;;
+        *) echo "unknown variant $v" >&2; continue ;;
+    esac
+    cp inputs/bedInput.$input "$d"/constant/bedInput
+    (
+        cd "$d" || exit 1
+        blockMesh > log.blockMesh 2>&1
+        case "$v" in
+            faMesh)
+                makeFaMesh > log.makeFaMesh 2>&1
+                ibScourPimpleFoam > log.ibScourPimpleFoam 2>&1 ;;
+            parallel)
+                foamDictionary -entry numberOfSubdomains -set $NP \
+                    system/decomposeParDict > /dev/null
+                decomposePar -no-finite-area > log.decomposePar 2>&1
+                mpirun -np $NP --bind-to none makeFaMesh -parallel > log.makeFaMesh 2>&1
+                mpirun -np $NP --bind-to none ibScourPimpleFoam -parallel \
+                    > log.ibScourPimpleFoam 2>&1
+                # reconstructPar of v2606 crashes on finite-area fields
+                # (heap corruption, also on the stock liquidFilmFoam
+                # tutorial); redistributePar reconstructs them correctly
+                mpirun -np $NP --bind-to none redistributePar -reconstruct \
+                    -parallel > log.redistributePar 2>&1 ;;
+            *)
+                ibScourPimpleFoam > log.ibScourPimpleFoam 2>&1 ;;
+        esac
+    )
+    $PYTHON "$HERE/check.py" --run-dir "$d" --variant "$v"
+done
+
+#------------------------------------------------------------------------------

@@ -1,0 +1,39 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: live-bed scour at a vertical pier, Roulund et al. (2005),
+# immersed height-field bed, ibScourPimpleFoam
+#
+# Mesh: blockMesh + snappyHexMesh around the pier (8.0 M cells; about 15 min
+# and 13 GB serial). Run: 20 s of flow on the fixed bed, then the mobile bed
+# with morphological factor 2 up to t = 170 s (300 s of morphological time),
+# about 85 000 steps; 1.3 s per step on 128 ranks (Intel Ice Lake), i.e.
+# about 30 h. Shorten the run with endTime in system/controlDict.
+#
+# Usage:
+#     ./Allrun            # NP=128 by default
+#     NP=64 ./Allrun
+# -----------------------------------------------------------------------------
+
+cd "${0%/*}" || exit 1
+NP=${NP:-128}
+set -e
+
+if [ ! -f constant/polyMesh/faces ]
+then
+    blockMesh > log.blockMesh 2>&1
+    snappyHexMesh -overwrite > log.snappyHexMesh 2>&1
+    renumberMesh -overwrite > log.renumberMesh 2>&1
+    checkMesh > log.checkMesh 2>&1 || true
+fi
+rm -rf 0 && cp -r 0.orig 0
+
+foamDictionary -entry numberOfSubdomains -set "$NP" system/decomposeParDict > /dev/null
+decomposePar -force -no-finite-area > log.decomposePar 2>&1
+# The bed area mesh on the floor patch (system/finite-area/faMeshDefinition)
+mpirun -np "$NP" --bind-to core makeFaMesh -parallel > log.makeFaMesh 2>&1
+mpirun -np "$NP" --bind-to core ibScourPimpleFoam -parallel > log.ibScourPimpleFoam 2>&1
+# To reconstruct (reconstructPar of v2606 crashes on the finite-area fields):
+#     mpirun -np $NP redistributePar -reconstruct -parallel
+echo "finished; bed in postProcessing/bed/<time>/bed.vtp, t_m in postProcessing/bed/morphTime.dat"
+
+#------------------------------------------------------------------------------

@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+// Dam break in a 0.585 m box, 5 mm cells. ib: the mesh starts 2 cells below
+// the floor z = 0, which is an immersed plane; bodyFitted: the floor is the
+// bottom wall patch.
+scale   1;
+vertices
+(
+    (0 0 0) (0.585 0 0) (0.585 0.005 0) (0 0.005 0)
+    (0 0 0.585) (0.585 0 0.585) (0.585 0.005 0.585) (0 0.005 0.585)
+);
+blocks ( hex (0 1 2 3 4 5 6 7) (117 1 117) simpleGrading (1 1 1) );
+boundary
+(
+    left   { type wall;  faces ((0 4 7 3)); }
+    right  { type wall;  faces ((1 2 6 5)); }
+    bottom { type wall;  faces ((0 3 2 1)); }
+    top    { type patch; faces ((4 5 6 7)); }
+    frontAndBack { type empty; faces ((0 1 5 4) (3 7 6 2)); }
+);

@@ -1,0 +1,43 @@
+#!/bin/bash
+# Solid overlap of the height field: the sand under a buried
+# immersed cylinder is released as bed change, not sediment. Checks: the
+# cumulative solid overlap equals (1 - n) x the traced solid volume below
+# the initial bed (1e-6), that volume is the half disc x width within 5 %,
+# the max Exner volume error is below 1e-12 m3, no deposition is blocked,
+# and the whole bed ends below the cylinder underside (z_b max < -0.02 m).
+# Usage: ./Allrun [-parallel]
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+if [ "$1" = "-parallel" ]
+then
+    decomposePar -force > log.decomposePar 2>&1 || { echo "decomposePar failed"; exit 1; }
+    mpirun -np 4 --map-by core --bind-to core ibScourPimpleFoam -parallel > log.ibScourPimpleFoam.parallel 2>&1
+    LOG=log.ibScourPimpleFoam.parallel
+else
+    ibScourPimpleFoam > log.ibScourPimpleFoam 2>&1
+    LOG=log.ibScourPimpleFoam
+fi
+export LOG
+grep "immersed solids over" $LOG
+grep "^Bed: MF" $LOG | tail -1 | cut -c1-250
+python3 - <<'PY'
+import re, math, os
+log = open(os.environ["LOG"]).read()
+m = re.search(r"of which below z_b ([-\d.eE+]+) m3", log)
+vBelow = float(m.group(1))
+lines = [l for l in log.splitlines() if l.startswith("Bed: MF")]
+last = lines[-1]
+cum = float(re.search(r"solid overlap [-\d.eE+]+ m3 \(cumulative ([-\d.eE+]+)\)", last).group(1))
+blocked = float(re.search(r"blocked deposition [-\d.eE+]+ m3 \(slide [-\d.eE+]+, cumulative ([-\d.eE+]+)\)", last).group(1))
+zmax = float(re.search(r"z_b min/max [-\d.eE+]+ / ([-\d.eE+]+)", last).group(1))
+err = max(abs(float(re.search(r"volume error ([-\d.eE+]+)", l).group(1))) for l in lines)
+n = 0.4
+exact = 0.5*math.pi*0.02**2*0.005
+e1 = abs(cum/(1 - n)/vBelow - 1)
+e2 = abs(vBelow/exact - 1)
+ok = e1 < 1e-6 and e2 < 0.05 and err < 1e-12 and abs(blocked) < 1e-12 and zmax < -0.02
+print(f"overlap released {cum/(1 - n):.6e} vs traced {vBelow:.6e} m3 (rel. {e1:.1e}), "
+      f"traced vs half disc {exact:.4e} (rel. {e2:.3f}), max volume error {err:.1e}, "
+      f"blocked {blocked:.1e}, z_b max {zmax:.4f}: {'PASS' if ok else 'FAIL'}")
+PY

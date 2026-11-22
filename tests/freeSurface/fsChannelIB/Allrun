@@ -1,0 +1,28 @@
+#!/bin/bash
+# fsChannelIB: uniform open-channel flow over an immersed flat bed with the
+# openChannelBCs inlet (discharge) and outlet (Manning normal depth), bed
+# slope as tilted gravity, kOmegaSST with density-variable weighting.
+# Pass: depth within 3 % of the Manning normal depth and flat to 2 %, bed
+# shear within 10 % of g h S, discharge conserved to 2 %. Serial, minutes.
+# Usage: ./Allrun [MULES|isoAdvector]
+cd "${0%/*}" || exit 1
+# The inlet/outlet conditions come from libopenChannelBCs (openChannelVoF,
+# https://github.com/psu-efd/openChannelVoF), built separately
+found=no
+for d in ${LD_LIBRARY_PATH//:/ }
+do
+    [ -f "$d/libopenChannelBCs.so" ] && found=yes
+done
+if [ $found = no ]
+then
+    echo "fsChannelIB: SKIP (libopenChannelBCs.so not found; build openChannelVoF)"
+    exit 0
+fi
+scheme=${1:-MULES}
+rm -rf 0 [1-9]* 0.[0-9]* log.* postProcessing
+cp -r 0.orig 0
+sed -i "s/^\(\s*alphaScheme\s*\)[A-Za-z]*;/\1$scheme;/" system/fvSolution
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+setFields > log.setFields 2>&1 || { echo "setFields failed"; exit 1; }
+ibScourInterFoam > log.ibScourInterFoam 2>&1
+python3 check.py

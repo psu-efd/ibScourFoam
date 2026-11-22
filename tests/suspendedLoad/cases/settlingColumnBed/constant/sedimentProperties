@@ -1,0 +1,33 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sedimentProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Still water (no flow solution), Stokes settling, deposition only
+solveFlow       no;
+solveSediment   yes;
+diffusivity     turbulence;     // DC = nu/ScC + nut/sigmaC (laminar: nut = 0)
+ScC             1000;           // nearly no molecular diffusion (as settlingColumn1D)
+sigmaC          1;
+
+d50             3.3351e-5;      // m: Stokes ws = 1.000e-3 m/s for s = 2.65, nu = 1e-6
+s               2.65;
+settlingVelocityModel  stokes;
+
+// Bed: E = ws Cb* with Cb* = 0 (constant model), D = ws C_f: deposition only
+referenceConcentrationModel  constant;
+Cb              0;
+delta           0;
+
+// ************************************************************************* //

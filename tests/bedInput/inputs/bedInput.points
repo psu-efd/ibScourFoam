@@ -1,0 +1,9 @@
+// Survey points: constant/boundaryData/bottom/points (x y 0) and the levels
+// constant/boundaryData/bottom/0/zbSurvey, interpolated on the floor-face
+// centres with a 2-D Delaunay triangulation
+initialElevation
+{
+    type        mappedFile;
+    mapMethod   planar;
+    fieldTable  zbSurvey;
+}

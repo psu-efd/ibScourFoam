@@ -1,0 +1,11 @@
+// Bed and non-erodible floor 2 cm below it, both as expressions
+initialElevation
+{
+    type        expression;
+    expression  #{ 0.01*sin(pi()*pos().x()/0.1)*cos(pi()*pos().y()/0.1) #};
+}
+rigidElevation
+{
+    type        expression;
+    expression  #{ 0.01*sin(pi()*pos().x()/0.1)*cos(pi()*pos().y()/0.1) - 0.02 #};
+}

@@ -1,0 +1,36 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      faMeshDefinition;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// The bed area mesh: the floor patch below the sediment. The edge patches
+// take the names of the neighbouring patches (open boundaries are matched
+// by the name of the edge patch or of its neighbouring patch).
+
+polyMeshPatches ( bottom );
+
+boundary
+{
+    inlet  { type patch; neighbourPolyPatch inlet; }
+    outlet { type patch; neighbourPolyPatch outlet; }
+    sides  { type patch; neighbourPolyPatch sides; }
+}
+
+defaultPatch
+{
+    name    bedBoundary;
+    type    patch;
+}
+
+// ************************************************************************* //

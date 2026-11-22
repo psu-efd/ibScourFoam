@@ -1,0 +1,91 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Live-bed scour at a vertical pier (D = 0.1 m), Roulund et al. (2005):
+// sand d50 0.26 mm under a 0.2 m deep current (U = 0.46 m/s, rigid lid).
+// 20 s of flow on the fixed bed, then the mobile bed with morphological
+// factor 2 (300 s of morphology in 150 s of flow).
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation 0;
+    openBoundaries  (inlet outlet);
+    fixedBed
+    {
+        inlet       0.05;       // rigid apron, 0.5 D
+    }
+
+    grainDiameter   0.00026;
+    specificGravity 2.63;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;     // Roulund et al. (2005) theta_c0
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+
+    bedSlope
+    {
+        model       kochFlokstra;
+        alpha       1.5;
+    }
+
+    morphStartTime  20;    // flow spin-up on the fixed bed
+    morphFactor     2;
+    maxBedChange    1e-4;
+    updateDistance  5e-4;
+
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+}
+
+cutFaces        true;       // apertures for the height-field bed
+cutCentroids                // cut-cell values at the fluid centroids
+{
+    skewCorrection  true;
+    faceInterpolation true;
+    diffusion       true;
+    pressure        true;
+    wallDistance    true;
+}
+wallSink        tangential;
+
+solids
+{
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  true;
+
+    wallLaw
+    {
+        type            vanDriest;
+        ks              0.0007;     // Roulund et al. (2005), Fig. 33
+    }
+}
+
+
+// ************************************************************************* //

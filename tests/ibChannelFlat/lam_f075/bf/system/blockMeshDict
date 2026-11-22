@@ -1,0 +1,72 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "system";
+    object      blockMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Body-fitted reference: the bed is the bottom wall patch "bed" at
+// z_b(y) (linear in y for the tilted variant). Parameters from
+// caseParameters.
+
+#include        "$FOAM_CASE/system/caseParameters"
+
+scale           1;
+
+vertices
+(
+    ($x0 $y0 $zBed0)
+    ($x1 $y0 $zBed0)
+    ($x1 $y1 $zBed1)
+    ($x0 $y1 $zBed1)
+    ($x0 $y0 $z1)
+    ($x1 $y0 $z1)
+    ($x1 $y1 $z1)
+    ($x0 $y1 $z1)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) ($nx $ny $nzBf) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    inlet
+    {
+        type            patch;
+        faces           ((0 4 7 3));
+    }
+    outlet
+    {
+        type            patch;
+        faces           ((1 2 6 5));
+    }
+    sides
+    {
+        type            patch;
+        faces           ((0 1 5 4) (3 7 6 2));
+    }
+    top
+    {
+        type            patch;
+        faces           ((4 5 6 7));
+    }
+    bed
+    {
+        type            wall;
+        faces           ((0 3 2 1));
+    }
+);
+
+// ************************************************************************* //

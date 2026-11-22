@@ -1,0 +1,99 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Bed-only test of the non-erodible floor: a sand patch 10 mm thick
+// (0.10 < x < 0.30 m) on a rigid floor z_r = 0, held downstream by a rigid
+// sill (z_r = z_b = 0.01 for 0.30 < x < 0.32), bare floor elsewhere
+// (z_b = z_r = 0; the expressions below). A uniform bed shear
+// (theta 0.14) carries the sand downstream over the sill onto the bare floor
+// towards the closed outlet. Expected: z_b never below z_r, the bare floor
+// the sill top never lowered, the sand volume above
+// the floor conserved to round-off (closed domain), no clamp volume (bed
+// load only), and part of the patch stripped to the floor (the limiter at
+// work).
+
+solveFlow       false;
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation            // sand 10 mm thick for 0.10 < x < 0.32 m
+    {
+        type        expression;
+        expression  #{ (pos().x() > 0.10 && pos().x() < 0.32) ? 0.01 : 0 #};
+    }
+    rigidElevation              // rigid sill z_r = 0.01 for 0.30 < x < 0.32 m
+    {
+        type        expression;
+        expression  #{ (pos().x() > 0.30 && pos().x() < 0.32) ? 0.01 : 0 #};
+    }
+    openBoundaries  ();
+
+    grainDiameter   0.00026;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+    bedSlope        { model kochFlokstra; alpha 1.5; }
+
+    morphStartTime  0;
+    morphFactor     100;
+    maxBedChange    2e-4;
+    updateDistance  1e-3;
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+
+    prescribedShear
+    {
+        type        expression;
+        expression  #{ vector(6e-4, 0, 0) #};
+    }
+
+    seepage
+    {
+        type        none;
+    }
+}
+
+cutFaces        true;
+wallSink        tangential;
+
+solids
+{
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  false;
+    wallLaw
+    {
+        type            vanDriest;
+        ks              0.0005;
+    }
+}
+
+// ************************************************************************* //

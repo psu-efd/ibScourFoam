@@ -1,0 +1,15 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+
+solvers
+{
+    "(C|CFinal)" { solver PBiCGStab; preconditioner DILU; tolerance 1e-12; relTol 0; }
+    "(p|pFinal)" { solver PCG; preconditioner DIC; tolerance 1e-8; relTol 0; }
+    "(U|UFinal)" { solver PBiCGStab; preconditioner DILU; tolerance 1e-8; relTol 0; }
+}
+PIMPLE { nOuterCorrectors 1; nCorrectors 1; nNonOrthogonalCorrectors 0; pRefCell 0; pRefValue 0; }

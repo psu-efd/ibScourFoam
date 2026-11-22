@@ -1,0 +1,41 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+// Uniform open-channel flow over an immersed flat bed: 3 m long slab, 2 cm
+// by 5 mm cells. Block A (z -0.01..0) lies under the immersed bed at z = 0
+// and its inlet/outlet faces are walls; block B (z 0..0.2) holds the
+// water (0.1 m) and the air. Width 0.02 m (one cell).
+scale   1;
+vertices
+(
+    (0 0 -0.01) (3 0 -0.01) (3 0.02 -0.01) (0 0.02 -0.01)
+    (0 0 0)     (3 0 0)     (3 0.02 0)     (0 0.02 0)
+    (0 0 0.2)   (3 0 0.2)   (3 0.02 0.2)   (0 0.02 0.2)
+);
+blocks
+(
+    hex (0 1 2 3 4 5 6 7)   (150 1 2)  simpleGrading (1 1 1)
+    hex (4 5 6 7 8 9 10 11) (150 1 40) simpleGrading (1 1 1)
+);
+boundary
+(
+    inlet      { type patch; faces ((4 8 11 7)); }
+    outlet     { type patch; faces ((5 6 10 9)); }
+    inletWall  { type wall;  faces ((0 4 7 3)); }
+    outletWall { type wall;  faces ((1 2 6 5)); }
+    bottom     { type wall;  faces ((0 3 2 1)); }
+    atmosphere { type patch; faces ((8 9 10 11)); }
+    frontAndBack { type empty; faces ((0 1 5 4) (3 7 6 2) (4 5 9 8) (7 11 10 6)); }
+);

@@ -1,0 +1,65 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      fvSolution;
+}
+
+solvers
+{
+    "alpha.water.*"
+    {
+        alphaScheme     isoAdvector;      // MULES | isoAdvector
+        nAlphaCorr      2;
+        nAlphaSubCycles 1;
+        cAlpha          1;
+        MULESCorr       yes;
+        nLimiterIter    5;
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0;
+        // isoAdvector controls (used with alphaScheme isoAdvector)
+        reconstructionScheme plicRDF;
+        isoFaceTol      1e-10;
+        surfCellTol     1e-6;
+        nAlphaBounds    3;
+        snapTol         1e-12;
+        clip            true;
+    }
+    // Tight: MULES turns the continuity error of a loosely converged
+    // pressure into alpha dips next to the solids (1e-5 at 1e-8/0.01),
+    // which drive a buoyancy current of 6e-5 m/s
+    p_rgh
+    {
+        solver          PCG;
+        preconditioner  DIC;
+        tolerance       1e-10;
+        relTol          0.001;
+    }
+    p_rghFinal { $p_rgh; tolerance 1e-12; relTol 0; }
+    "(U|k|omega)"
+    {
+        solver          smoothSolver;
+        smoother        symGaussSeidel;
+        tolerance       1e-8;
+        relTol          0;
+    }
+    "(U|k|omega)Final" { $U; }
+}
+
+PIMPLE
+{
+    momentumPredictor no;
+    nOuterCorrectors 1;
+    nCorrectors     3;
+    nNonOrthogonalCorrectors 0;
+}

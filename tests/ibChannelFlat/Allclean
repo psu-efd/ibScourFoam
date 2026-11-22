@@ -1,0 +1,16 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allclean: T1 ibChannelFlat
+#
+# Remove the run directories of this case below $IBS_RUN_ROOT. Nothing is
+# generated inside the repository.
+# -----------------------------------------------------------------------------
+
+cd "$(dirname "$0")" || exit 1
+# shellcheck source=../common/runFunctions.sh
+. ../common/runFunctions.sh
+set -e
+
+ibs_clean_dir "$IBS_RUN_ROOT/ibChannelFlat"
+
+#------------------------------------------------------------------------------

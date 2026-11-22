@@ -1,0 +1,35 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sedimentProperties;
+}
+
+solveSediment   no;         // phase A: flow only (Allrun switches it on)
+ScC             1;
+sigmaC          1;
+d50             2e-04;
+s               2.65;
+settlingVelocityModel constant;
+ws              0.025;
+referenceConcentrationModel zysermanFredsoe;
+shieldsNumber   total;
+
+// Ripple suspension (Nielsen 1992): eta 1 cm, lambda 5 cm -> L_s 1.4 cm,
+// eps_s = ws L_s = 3.5e-4 m2/s above the eddy viscosity of this flow, so the
+// equilibrium is C0 exp(-z/L_s) with C0 = 0.005 (theta/(1 - pi eta/lambda)^2)^3
+ibBedExchange
+{
+    mode            ripple;
+    period          10;
+    mixingLayers    5;
+    ripples
+    {
+        model       fixed;
+        height      0.01;
+        length      0.05;
+    }
+}
+
+// ************************************************************************* //

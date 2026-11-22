@@ -85,10 +85,29 @@ doc/Doxygen/DTAGS
 
 
 
-# Tutorial run artifacts (v2206 port)
+# Tutorial run artifacts
+tutorials/*/constant/polyMesh/
+tutorials/*/[0-9]*/
+!tutorials/*/0.orig/
+tutorials/*/processor*/
+tutorials/*/postProcessing/
+tutorials/*/run*/
+tutorials/*/dynamicCode/
 build.log
 log.*
-tutorials/*/constant/polyMesh/
-tutorials/*/dynamicCode/
-tutorials/*/processor*/
-tutorials/Roulund2005_scour_parallel/
+tutorials/*/constant/finite-area/
+# tutorials with several cases (humpMigration/hump, humpMigration/flat)
+tutorials/*/*/constant/polyMesh/
+tutorials/*/*/constant/finite-area/
+tutorials/*/*/[0-9]*/
+tutorials/*/*/postProcessing/
+!tutorials/*/*/0.orig/
+
+# Run-time compiled function objects of the test cases
+tests/**/dynamicCode/
+# Run outputs of the test cases: written soil meshes, check figures, structureFlow run directory
+tests/**/constant/soil/
+tests/freeSurface/*/*.png
+
+# Default run directory of the test suite (tests/common/runFunctions.sh)
+/run/

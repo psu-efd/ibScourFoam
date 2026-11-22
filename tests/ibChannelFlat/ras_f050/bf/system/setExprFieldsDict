@@ -1,0 +1,47 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      setExprFieldsDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Initial fields: turbulent open-channel profile over the local depth
+// (1/7 power law for U with depth-mean 0.3 m/s, linear k with
+// u* = 0.01461002289 m/s of the smooth-wall log law, omega from a mixing length);
+// zero velocity and floor values of k below the bed
+
+expressions
+(
+    U
+    {
+        field       U;
+        variables   ( "zb = 0.0025 + (pos().y() - 0.075)*0" "h = 0.1 - zb" "y = pos().z() - zb" "eta = min(max(y/h, 1e-6), 1)" "k0 = y > 0 ? 0.0007115092298*(1 - eta) + 2.134527689e-07 : 2.134527689e-07" "yp = max(y, 1e-4*h)" "mix = 0.41*yp/(1 + 0.41*yp/(0.09*h))" );
+        expression  #{ vector(y > 0 ? 0.3428571429*pow(eta, 0.1428571429) : 0, 0, 0) #};
+        dimensions  [0 1 -1 0 0 0 0];
+    }
+    k
+    {
+        field       k;
+        variables   ( "zb = 0.0025 + (pos().y() - 0.075)*0" "h = 0.1 - zb" "y = pos().z() - zb" "eta = min(max(y/h, 1e-6), 1)" "k0 = y > 0 ? 0.0007115092298*(1 - eta) + 2.134527689e-07 : 2.134527689e-07" "yp = max(y, 1e-4*h)" "mix = 0.41*yp/(1 + 0.41*yp/(0.09*h))" );
+        expression  #{ k0 #};
+        dimensions  [0 2 -2 0 0 0 0];
+    }
+    omega
+    {
+        field       omega;
+        variables   ( "zb = 0.0025 + (pos().y() - 0.075)*0" "h = 0.1 - zb" "y = pos().z() - zb" "eta = min(max(y/h, 1e-6), 1)" "k0 = y > 0 ? 0.0007115092298*(1 - eta) + 2.134527689e-07 : 2.134527689e-07" "yp = max(y, 1e-4*h)" "mix = 0.41*yp/(1 + 0.41*yp/(0.09*h))" );
+        expression  #{ sqrt(k0)/(0.5477225575*mix) #};
+        dimensions  [0 0 -1 0 0 0 0];
+    }
+);
+
+// ************************************************************************* //

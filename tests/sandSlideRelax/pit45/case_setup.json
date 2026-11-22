@@ -1,0 +1,16 @@
+{
+  "analytic": {
+    "height": 0.03655022172766083,
+    "radius": 0.05848035476425733,
+    "volume": 0.00013089969389957473
+  },
+  "cell": 0.005,
+  "cone_height": 0.049999999999999996,
+  "delta_t": 0.01,
+  "half_width": 0.1,
+  "mu_s": 0.625,
+  "n_steps": 20,
+  "radius": 0.05,
+  "shape": "pit",
+  "slope_deg": 45.0
+}

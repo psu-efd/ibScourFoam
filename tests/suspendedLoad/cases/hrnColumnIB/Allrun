@@ -1,0 +1,40 @@
+#!/bin/bash
+# Immersed-bed HRN column: the turbulent flume flow (Fuhrman et
+# al. 2010 flume, H 0.067 m, Ubar 0.22 m/s, ks 9.9 mm, k-epsilon) over a plane
+# immersed bed that coincides with a cell face, sediment 1 of Liu (2014)
+# (ws 5e-4 m/s, d 2.36e-5 m, delta 2d, Zyserman-Fredsoe C_b*), bed exchange
+# HRN linear with the first-cell diffusivity. Phase A: flow 400 s; phase B:
+# frozen flow, C from 0 for 2000 s. Checks: equilibrium (|E - D| < 1e-4 E),
+# the wall-cell concentration equals the closed form of the two-point flux,
+# C_1 = C_b* (1 + P2)(1 - Pe1), within 1e-3, and C >= 0. Against the
+# body-fitted run (wall1_firstCell): u* 0.01929 vs 0.01934 m/s, C within
+# 1.5 % over the depth (0.3 % in the wall cell).
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+ibScourPimpleFoam > log.flow 2>&1 || { echo "flow phase failed"; exit 1; }
+sed -i 's/^solveFlow       true;/solveFlow       false;/' constant/immersedBoundaryDict
+sed -i 's/^solveSediment   no;.*/solveSediment   yes;/' constant/sedimentProperties
+sed -i 's/^endTime         400;/endTime         2400;/; s/^deltaT          0.02;/deltaT          0.5;/; s/^writeInterval   400;/writeInterval   2000;/; s/^adjustTimeStep  yes;/adjustTimeStep  no;/' system/controlDict
+cp 0/C 400/C
+ibScourPimpleFoam > log.sediment 2>&1 || { echo "sediment phase failed"; exit 1; }
+# restore the dictionaries for the next run
+sed -i 's/^solveFlow       false;/solveFlow       true;/' constant/immersedBoundaryDict
+sed -i 's/^solveSediment   yes;/solveSediment   no;         \/\/ phase A: flow only (Allrun switches it on)/' constant/sedimentProperties
+sed -i 's/^endTime         2400;/endTime         400;/; s/^deltaT          0.5;/deltaT          0.02;/; s/^writeInterval   2000;/writeInterval   400;/' system/controlDict
+python3 - <<'PY'
+import re
+log = open("log.sediment").read()
+E = [float(m) for m in re.findall(r"entrainment ([0-9.e+-]+)", log)]
+D = [float(m) for m in re.findall(r"deposition ([0-9.e+-]+) m3", log)]
+cmin = min(float(m) for m in re.findall(r"C min/max ([0-9.e+-]+) /", log))
+cmax = float(re.findall(r"C min/max [0-9.e+-]+ / ([0-9.e+-]+)", log)[-1])
+cb = float(re.findall(r"C_b\* max ([0-9.e+-]+)", log)[-1])
+pe1 = float(re.findall(r"max Pe1 ([0-9.e+-]+)", log)[-1])
+# P2 = Pe1 delta/y_c with delta = 2 d = 4.72e-5 m, y_c = 2.61e-3 m
+p2 = pe1*4.72e-5/2.61e-3
+c1 = cb*(1 + p2)*(1 - pe1)
+eq = abs(E[-1] - D[-1])/E[-1]
+ok = eq < 1e-4 and abs(cmax/c1 - 1) < 1e-3 and cmin >= 0
+print(f"equilibrium |E-D|/E {eq:.1e}, wall cell C {cmax:.5f} vs closed form {c1:.5f} ({100*(cmax/c1-1):.3f} %), C min {cmin:.1e}: {'PASS' if ok else 'FAIL'}")
+PY

@@ -1,0 +1,38 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+// Lake at rest over a sloping immersed bed with an immersed cylinder:
+// 2-D slab 1 m x 0.5 m, 100 x 50 cells (dx = dz = 1 cm).
+scale   1;
+
+vertices
+(
+    (0 0 0) (1 0 0) (1 0.01 0) (0 0.01 0)
+    (0 0 0.5) (1 0 0.5) (1 0.01 0.5) (0 0.01 0.5)
+);
+
+blocks
+(
+    hex (0 1 2 3 4 5 6 7) (100 1 50) simpleGrading (1 1 1)
+);
+
+boundary
+(
+    left   { type wall;  faces ((0 4 7 3)); }
+    right  { type wall;  faces ((1 2 6 5)); }
+    bottom { type wall;  faces ((0 3 2 1)); }
+    top    { type patch; faces ((4 5 6 7)); }
+    frontAndBack { type empty; faces ((0 1 5 4) (3 7 6 2)); }
+);

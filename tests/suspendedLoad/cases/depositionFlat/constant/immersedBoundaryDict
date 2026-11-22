@@ -1,0 +1,72 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+// Suspended-load deposition test: still water (flow off,
+// U = 0) over a flat immersed bed, uniform C0 = 0.01 in the 0.1 m of fluid,
+// ws = 0.01 m/s, no entrainment (reference concentration 0). All grains
+// settle within H/ws = 10 s: the bed rises by C0 H/(1 - n) = 1.667 mm,
+// the suspended volume goes to zero and the sediment budget closes.
+solveFlow       false;
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation 0;
+    openBoundaries  (inlet outlet);
+
+    grainDiameter   0.00026;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;   // no shear: no bed load
+
+    bedSlope        { model kochFlokstra; alpha 1.5; }
+
+    morphStartTime  0;
+    morphFactor     1;
+    maxBedChange    1e-4;
+    updateDistance  5e-4;
+
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+
+    // theta 0.04: tau = theta (s - 1) g d50 = 1.6841e-4 m2/s2 (kinematic)
+
+    seepage
+    {
+        type        none;
+    }
+
+}
+
+cutFaces        true;
+wallSink        tangential;
+
+solids
+{
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  false;
+    wallLaw
+    {
+        type            vanDriest;
+        ks              0.0005;
+    }
+}

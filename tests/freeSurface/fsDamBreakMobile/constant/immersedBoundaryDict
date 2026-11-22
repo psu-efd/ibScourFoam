@@ -1,0 +1,53 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+
+// Sand bed as a height field at z = 0.05 (five cells above the floor),
+// mobile from the start, factor 1; the dry part of the bed must not
+// transport until the bore wets it (wetThreshold on alpha.water)
+cutFaces        false;
+wallSink        tangential;
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation 0.05;
+    openBoundaries  ();
+    grainDiameter   0.0001;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+    bedSlope        { model kochFlokstra; alpha 1.5; }
+    morphStartTime  0;
+    morphFactor     1;
+    bedCourant      0.2;
+    maxBedChange    2e-3;
+    updateDistance  1e-3;
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+    wetThreshold    0.5;
+    seepage         { type none; }
+}
+
+wallModel
+{
+    mode            stress;
+    wallLaw         { type laminar; }
+}

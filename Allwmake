@@ -1,2 +1,17 @@
-wmake src
-wmake solvers/ibScourFoam
+#!/bin/sh
+cd "${0%/*}" || exit                                # Run from this directory
+#------------------------------------------------------------------------------
+
+# Suspended-sediment library and solver (bed exchange; used by libibScour)
+wmake libso src/suspendedSediment
+wmake solvers/suspendedSedimentFoam
+
+# Immersed-boundary library (libibScour) and solvers
+wmake libso src/ibScour
+wmake solvers/ibScourPimpleFoam
+wmake solvers/ibScourInterFoam
+
+# Post-processing utilities
+wmake utilities/kBudget
+
+#------------------------------------------------------------------------------

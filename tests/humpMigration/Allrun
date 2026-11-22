@@ -1,0 +1,45 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: T3 humpMigration
+#
+# A Gaussian hump on an immersed height-field bed (mf20) and its flat-bed
+# control (mf20_flat), ready-made case folders: 3 s of flow on the fixed bed,
+# then 15 s with morphological factor 20. Each is copied to
+# $IBS_RUN_ROOT/humpMigration/<variant> and run there; check.py evaluates the
+# hump against the control (migration speed, conservation, oscillations).
+#
+# Usage:
+#     ./Allrun [variant ...]        (default: mf20 mf20_flat)
+# -----------------------------------------------------------------------------
+
+cd "$(dirname "$0")" || exit 1
+HERE=$PWD
+# shellcheck source=../common/runFunctions.sh
+. ../common/runFunctions.sh
+ibs_load_env || exit 1
+
+ROOT=$IBS_RUN_ROOT/humpMigration
+if [ $# -gt 0 ]; then variants=("$@"); else variants=(mf20 mf20_flat); fi
+
+for variant in "${variants[@]}"
+do
+    ibs_throttle
+    (
+        ibs_run_case "$HERE/$variant" "$ROOT/$variant"
+        ibs_view "$ROOT/$variant"
+    ) &
+done
+wait
+
+# A hump run is compared with its flat control when available
+for variant in "${variants[@]}"
+do
+    case "$variant" in *_flat) continue ;; esac
+    dir=$ROOT/$variant
+    refOpt=()
+    [ -d "$ROOT/${variant}_flat" ] && refOpt=(--ref-dir "$ROOT/${variant}_flat")
+    $IBS_PYTHON "$HERE/check.py" --run-dir "$dir" "${refOpt[@]}" > "$dir/log.check" 2>&1 || true
+    tail -1 "$dir/log.check"
+done
+
+#------------------------------------------------------------------------------

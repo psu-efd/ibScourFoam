@@ -1,0 +1,23 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      sedimentProperties;
+}
+
+solveSediment   no;         // phase A: flow only (Allrun switches it on)
+ScC             1;
+sigmaC          1;
+d50             2.36e-05;
+s               2.65;
+settlingVelocityModel constant;
+ws              0.0005;
+referenceConcentrationModel zysermanFredsoe;
+shieldsNumber   total;
+
+ibBedExchange
+{
+    mode        HRN;
+    form        linear;
+}

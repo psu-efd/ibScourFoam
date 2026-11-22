@@ -1,0 +1,16 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       volScalarField;
+    object      C;
+}
+
+dimensions [0 0 0 0 0 0 0];
+internalField uniform 0;
+boundaryField
+{
+    bottom  { type sedimentBedFlux; mode Robin; beta 0.2; value uniform 0; }
+    top     { type zeroGradient; }
+    sides   { type empty; }
+}

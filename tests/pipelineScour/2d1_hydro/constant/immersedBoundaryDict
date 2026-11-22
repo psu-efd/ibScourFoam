@@ -1,0 +1,73 @@
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      immersedBoundaryDict;
+}
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation 0;         // flat bed through the pipe axis
+    openBoundaries  (inlet outlet);
+    fixedBed
+    {
+        inlet       0.02;       // equilibrium feed: inlet bed kept at z = 0
+    }
+
+    grainDiameter   0.00026;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+    bedSlope
+    {
+        model       kochFlokstra;
+        alpha       1.5;
+    }
+
+    morphStartTime  1e+30;
+    morphFactor     20;
+    maxBedChange    1e-4;
+    updateDistance  5e-4;
+
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+}
+
+cutFaces        true;
+cutCentroids
+{
+    skewCorrection  true;
+    faceInterpolation true;
+    diffusion       true;
+    pressure        true;
+    wallDistance    true;
+}
+wallSink        tangential;
+
+solids
+{
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  true;
+
+    wallLaw
+    {
+        type            spalding;   // hydraulically smooth bed
+    }
+}

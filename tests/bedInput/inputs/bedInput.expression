@@ -1,0 +1,6 @@
+// Analytic bed as an expression of the floor-face centre
+initialElevation
+{
+    type        expression;
+    expression  #{ 0.01*sin(pi()*pos().x()/0.1)*cos(pi()*pos().y()/0.1) #};
+}

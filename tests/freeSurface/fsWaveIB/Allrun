@@ -1,0 +1,21 @@
+#!/bin/bash
+# fsWaveIB: Stokes II waves (H 0.02 m, T 1.2 s, depth 0.2 m) over an immersed
+# flat bed (ibScourInterFoam) against the bed as a wall patch (stock
+# interFoam); surface elevation at four gauges. Serial, a few minutes each.
+# Usage: ./Allrun [MULES|isoAdvector]
+cd "${0%/*}" || exit 1
+scheme=${1:-MULES}
+for v in ib bodyFitted
+do
+    (
+        cd $v || exit 1
+        rm -rf 0 [1-9]* 0.[0-9]* log.* postProcessing
+        cp -r 0.orig 0
+        sed -i "s/^\(\s*alphaScheme\s*\)[A-Za-z]*;/\1$scheme;/" system/fvSolution
+        blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed in $v"; exit 1; }
+        setFields > log.setFields 2>&1 || { echo "setFields failed in $v"; exit 1; }
+        app=$(grep -E "^application" system/controlDict | awk '{print $2}' | tr -d ';')
+        $app > log.$app 2>&1 || { echo "$app failed in $v"; tail -20 log.$app; exit 1; }
+    ) || exit 1
+done
+python3 compare.py

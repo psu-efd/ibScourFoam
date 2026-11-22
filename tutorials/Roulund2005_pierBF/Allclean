@@ -1,0 +1,4 @@
+#!/bin/bash
+# Remove the run directory of this tutorial
+cd "${0%/*}" || exit 1
+rm -rf run log.setup

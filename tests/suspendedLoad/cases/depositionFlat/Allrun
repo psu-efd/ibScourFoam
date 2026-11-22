@@ -1,0 +1,27 @@
+#!/bin/bash
+# Still-water deposition onto a flat immersed bed: C0 = 0.01 in
+# 0.1 m of fluid, ws = 0.01 m/s, no entrainment. Checks: the bed rises by
+# C0 H/(1 - n) = 1.6667 mm within 1 % at 60 s, the sediment budget (bed +
+# suspended) stays at the initial 8e-5 m3 within 1e-3, the Exner volume
+# error stays below 1e-12 m3. Usage: ./Allrun [-parallel]
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+if [ "$1" = "-parallel" ]
+then
+    decomposePar -force > log.decomposePar 2>&1 || { echo "decomposePar failed"; exit 1; }
+    mpirun -np 4 --map-by core --bind-to core ibScourPimpleFoam -parallel > log.ibScourPimpleFoam 2>&1
+else
+    ibScourPimpleFoam > log.ibScourPimpleFoam 2>&1
+fi
+python3 - <<'PY'
+import re
+log = open("log.ibScourPimpleFoam").read()
+zb = [float(m) for m in re.findall(r"z_b min/max ([0-9.e+-]+) /", log)]
+vol = [float(m) for m in re.findall(r"Suspended load: .*?volume ([0-9.e+-]+) m3", log)]
+err = [abs(float(m)) for m in re.findall(r"volume error ([0-9.e+-]+)", log)]
+zbEnd = zb[-1]; exact = 0.01*0.1/0.6
+budget = max(abs(z*0.6*0.08 + v - 8e-5) for z, v in zip(zb, vol))/8e-5
+ok = abs(zbEnd/exact - 1) < 0.01 and budget < 1e-3 and max(err) < 1e-12
+print(f"bed rise {zbEnd*1e3:.4f} mm (exact {exact*1e3:.4f}), max budget error {budget:.2e}, max Exner volume error {max(err):.1e}: {'PASS' if ok else 'FAIL'}")
+PY

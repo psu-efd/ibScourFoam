@@ -1,0 +1,38 @@
+# Run artifacts of the ibScourFoam test suite. Runs normally go to
+# $IBS_RUN_ROOT (outside the repository); these patterns keep the tree
+# clean if a case is ever run in place.
+
+# Python
+__pycache__/
+*.pyc
+
+# Generated case files (the test cases ship their inputs)
+**/constant/polyMesh/
+**/constant/finite-area/
+**/constant/*_dual/
+
+# Time and processor directories (0.orig is a template and is kept)
+**/0/
+**/[1-9]*/
+**/0.[0-9]*/
+**/processor*/
+# pipelineScour case folders (names start with a digit)
+!pipelineScour/2d*/
+!pipelineScour/3d*/
+# inflow and survey data of the cases (boundaryData time folder 0)
+!**/constant/boundaryData/**/0/
+
+# Logs and results
+log.*
+exitStatus.*
+metrics.json
+summary.json
+*.out
+.ruff_cache/
+.nfs*
+postProcessing/
+
+# bedInput runs
+bedInput/run/
+# survey data of bedInput (boundaryData time folder 0)
+!bedInput/inputs/boundaryData/bottom/0/

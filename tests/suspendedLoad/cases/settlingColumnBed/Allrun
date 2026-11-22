@@ -1,0 +1,20 @@
+#!/bin/bash
+# Settling column with the body-fitted bed of libibScour: the
+# settlingColumn case plus the deformingBed function object (bed patch
+# bottom, no flow, no bed load, no mesh motion) which receives D - E of the
+# sedimentBedFlux condition. Checks: the bed level rises by C0 H/(1 - n) =
+# 1e-3 x 0.2/0.6 = 0.3333 mm within 1e-3 at 400 s, and the Exner volume
+# error stays below 1e-14 m3.
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+suspendedSedimentFoam > log.suspendedSedimentFoam 2>&1 || { echo "solver failed"; exit 1; }
+python3 - <<'PY'
+import re
+log = open("log.suspendedSedimentFoam").read()
+zb = [float(m) for m in re.findall(r"z_b min/max ([0-9.e+-]+) /", log)]
+err = [abs(float(m)) for m in re.findall(r"volume error ([0-9.e+-]+)", log)]
+exact = 1e-3*0.2/0.6
+ok = abs(zb[-1]/exact - 1) < 1e-3 and max(err) < 1e-14
+print(f"bed rise {zb[-1]*1e3:.5f} mm vs exact {exact*1e3:.5f} mm, max Exner volume error {max(err):.1e}: {'PASS' if ok else 'FAIL'}")
+PY

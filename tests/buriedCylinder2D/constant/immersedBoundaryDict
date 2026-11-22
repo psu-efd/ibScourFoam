@@ -1,0 +1,98 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Bed-only test of the solid overlap of the height field: a
+// horizontal cylinder (immersed solid, radius 20 mm, centre on the initial
+// bed) lies across a 2D channel; a prescribed bed shear growing downstream
+// erodes the bed uniformly. The columns under the cylinder are inactive
+// until the neighbours expose the sand below the cylinder; their z_b then
+// passes through the cylinder at no sediment cost. Expected: the released
+// solid overlap equals the cylinder volume below z_b = 0 (reported by the
+// span tracing, half disc x width within 5 %), the Exner volume error stays
+// at round-off, and the whole bed ends below the cylinder underside.
+
+solveFlow       false;
+
+bed
+{
+    type            heightField;
+    floorPatch      bottom;
+    initialElevation 0;
+    openBoundaries  (inlet outlet);
+
+    grainDiameter   0.00026;
+    specificGravity 2.65;
+    porosity        0.4;
+    gravity         9.81;
+    criticalShields 0.05;
+    frictionCoefficient 0.625;
+    bedLoad         engelundFredsoe;
+    bedSlope        { model kochFlokstra; alpha 1.5; }
+
+    morphStartTime  0;
+    morphFactor     100;
+    maxBedChange    2e-4;
+    updateDistance  1e-3;
+    sandSlide       true;
+    slideDiffusivity 5e-4;
+    slideTolerance  0.02;
+    slideMaxIter    500;
+
+    // theta 0.095 at the inlet to 0.33 at the outlet: dq/dx > 0, the bed
+    // lowers everywhere
+    prescribedShear
+    {
+        type        expression;
+        expression  #{ vector(4e-4 + 1e-3*pos().x()/0.4, 0, 0) #};
+    }
+
+    seepage
+    {
+        type        none;
+    }
+}
+
+cutFaces        true;
+wallSink        tangential;
+
+solids
+{
+    log
+    {
+        type            cylinder;
+        point1          (0.2 -1 0);
+        point2          (0.2  1 0);
+        radius          0.02;
+    }
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  false;
+    wallLaw
+    {
+        type            vanDriest;
+        ks              0.0005;
+    }
+}
+
+// ************************************************************************* //

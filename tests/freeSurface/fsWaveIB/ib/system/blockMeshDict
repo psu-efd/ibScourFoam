@@ -1,0 +1,40 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      blockMeshDict;
+}
+
+// Wave flume 10 m long, water depth 0.2 m, 2 cm x 1 cm cells. ib: block A
+// (z -0.02..0) lies under the immersed bed at z = 0 with its end faces as
+// walls; block B (z 0..0.35) holds the water and the air.
+scale   1;
+vertices
+(
+    (0 0 -0.02) (10 0 -0.02) (10 0.02 -0.02) (0 0.02 -0.02)
+    (0 0 0)     (10 0 0)     (10 0.02 0)     (0 0.02 0)
+    (0 0 0.35)  (10 0 0.35)  (10 0.02 0.35)  (0 0.02 0.35)
+);
+blocks
+(
+    hex (0 1 2 3 4 5 6 7)   (500 1 2)  simpleGrading (1 1 1)
+    hex (4 5 6 7 8 9 10 11) (500 1 35) simpleGrading (1 1 1)
+);
+boundary
+(
+    inlet      { type patch; faces ((4 8 11 7)); }
+    outlet     { type patch; faces ((5 6 10 9)); }
+    inletWall  { type wall;  faces ((0 4 7 3)); }
+    outletWall { type wall;  faces ((1 2 6 5)); }
+    ground     { type wall;  faces ((0 3 2 1)); }
+    top        { type patch; faces ((8 9 10 11)); }
+    sides      { type empty; faces ((0 1 5 4) (3 7 6 2) (4 5 9 8) (7 11 10 6)); }
+);

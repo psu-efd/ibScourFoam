@@ -1,0 +1,63 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      controlDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+application     suspendedSedimentFoam;
+startFrom       startTime;
+startTime       0;
+stopAt          endTime;
+endTime         400;
+deltaT          0.25;           // settling Courant number ws dt/dz = 0.25
+writeControl    runTime;
+writeInterval   10;
+purgeWrite      0;
+writeFormat     ascii;
+writePrecision  12;
+writeCompression off;
+timeFormat      general;
+timePrecision   6;
+runTimeModifiable false;
+
+functions
+{
+    bedExchange
+    {
+        type        sedimentBedExchange;
+        libs        (suspendedSediment);
+        writeFields no;
+    }
+
+    // Body-fitted bed of libibScour: the Exner equation receives D - E of
+    // the sedimentBedFlux condition (no flow, no bed load, no mesh motion)
+    bed
+    {
+        type            deformingBed;
+        libs            (ibScour);
+        bedPatch        bed;
+        C               C;
+        moveMesh        false;
+
+        grainDiameter   3.3351e-5;
+        specificGravity 2.65;
+        porosity        0.4;
+        criticalShields 0.05;
+        frictionCoefficient 0.63;
+        bedLoad         engelundFredsoe;
+        morphFactor     1;
+        morphStartTime  0;
+        maxBedChange    1e-4;
+        sandSlide       false;
+    }
+}

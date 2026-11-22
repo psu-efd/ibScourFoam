@@ -1,0 +1,6 @@
+sedimentModels/settlingVelocityModel.C
+sedimentModels/referenceConcentrationModel.C
+derivedFvPatchFields/sedimentBedFlux/sedimentBedFluxFvPatchScalarField.C
+functionObjects/sedimentBedExchange/sedimentBedExchange.C
+
+LIB = $(FOAM_USER_LIBBIN)/libsuspendedSediment

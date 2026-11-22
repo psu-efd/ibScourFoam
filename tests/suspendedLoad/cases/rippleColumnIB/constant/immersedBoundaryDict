@@ -1,0 +1,54 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2606                                 |
+|   \\  /    A nd           | Website:  www.openfoam.com                      |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      immersedBoundaryDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+// Darzikolaei & Liu (2025, WRR) porous/solid structure scour; sediment and
+// bed roughness as in the published legacy cases (HydroShare archive):
+// d50 0.66 mm, s 2.63, theta_c 0.0171, friction 0.625, k_s 5 mm, morphological
+// factor 200. Flow-only spin-up until morphStartTime.
+
+
+cutFaces        true;
+wallSink        tangential;
+solveFlow       true;
+
+solids
+{
+    bed
+    {
+        type            plane;
+        point           (0 0 0);
+        normal          (0 0 1);
+    }
+}
+
+turbulence
+{
+    kTreatment      equilibrium;
+}
+
+wallModel
+{
+    mode            stress;
+    reportMaxShear  false;
+
+    wallLaw
+    {
+        type            vanDriest;
+        ks              0.0099;
+    }
+}
+
+// ************************************************************************* //

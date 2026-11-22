@@ -1,0 +1,46 @@
+#!/bin/bash
+# -----------------------------------------------------------------------------
+# Allrun: T1 ibChannelFlat
+#
+# Each variant <regime>_<bed> has a ready-made immersed-boundary case (ib/,
+# ibScourPimpleFoam) and its body-fitted reference (bf/, pimpleFoam); both
+# are copied to $IBS_RUN_ROOT/ibChannelFlat/<variant>/{ib,bf}, run there and
+# compared by check.py (metrics in <variant>/metrics.json).
+#
+# Usage:
+#     ./Allrun [variant ...]
+#
+# Variants: regime lam | ras, bed f000 | f025 | f050 | f075 (bed at that
+# fraction of a cell height) | tilt2 (2 deg cross-stream tilt around
+# f = 0.5). Default: all ten.
+# -----------------------------------------------------------------------------
+
+cd "$(dirname "$0")" || exit 1
+HERE=$PWD
+# shellcheck source=../common/runFunctions.sh
+. ../common/runFunctions.sh
+ibs_load_env || exit 1
+
+ROOT=$IBS_RUN_ROOT/ibChannelFlat
+if [ $# -gt 0 ]; then variants=("$@"); else
+    variants=(); for r in lam ras; do for b in f000 f025 f050 f075 tilt2; do
+        variants+=("${r}_${b}"); done; done; fi
+
+for variant in "${variants[@]}"
+do
+    ibs_throttle
+    (
+        for kind in ib bf
+        do
+            ibs_run_case "$HERE/$variant/$kind" "$ROOT/$variant/$kind"
+            ibs_view "$ROOT/$variant/$kind"
+        done
+        $IBS_PYTHON "$HERE/check.py" --run-dir "$ROOT/$variant/ib" \
+            --ref-dir "$ROOT/$variant/bf" --out "$ROOT/$variant/metrics.json" \
+            --variant "$variant" > "$ROOT/$variant/log.check" 2>&1 || true
+        tail -1 "$ROOT/$variant/log.check"
+    ) &
+done
+wait
+
+#------------------------------------------------------------------------------

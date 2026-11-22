@@ -1,0 +1,31 @@
+#!/bin/bash
+# Rouse equilibrium profile (the steady part of a Rouse-column
+# column): still column Z in [A, 1] with A = 0.05, h = 1 m, u* = 1 m/s,
+# prescribed parabolic diffusivity K = kappa Z (1 - Z) (kappa 0.41), Vs = 0.2
+# (Rouse number P = Vs/kappa = 0.4878), Cheng (1984) Robin condition at the
+# reference level (mode Robin, beta = Vs, C* = 1), zero flux at the lid,
+# C from 0 to equilibrium (40 time units). Closed form: C = C* [(1 - Z)/Z
+# A/(1 - A)]^P. Checks: max |C - exact|/C* < 2e-3 over 0.1 <= Z <= 0.9 and
+# C(A) = C* within 1e-3 (first cell vs the exact value at its centre), bed
+# flux equilibrium |E - D| < 1e-4 E.
+cd "${0%/*}" || exit 1
+rm -rf 0 && cp -r 0.orig 0  # initial fields
+blockMesh > log.blockMesh 2>&1 || { echo "blockMesh failed"; exit 1; }
+suspendedSedimentFoam > log.suspendedSedimentFoam 2>&1 || { echo "solver failed"; exit 1; }
+python3 - <<'PY'
+import re
+N, A, kappa, Vs, Cs = 200, 0.05, 0.41, 0.2, 1.0
+P = Vs/kappa
+s = open("40/C").read()
+C = [float(v) for v in re.search(r"internalField\s+nonuniform\s+List<scalar>\s*\n\d+\s*\n\(\n(.*?)\n\)", s, re.S).group(1).split()]
+z = [A + (i + 0.5)*(1 - A)/N for i in range(N)]
+ex = [Cs*((1 - zz)/zz*A/(1 - A))**P for zz in z]
+err = max(abs(c - e)/Cs for c, e, zz in zip(C, ex, z) if 0.1 <= zz <= 0.9)
+rows = [l.split() for l in open("postProcessing/bedExchange/0/sedimentBedExchange.dat") if l.strip() and not l.startswith("#")]
+E, D = float(rows[-1][1]), float(rows[-1][2])
+checks = [(err < 2e-3, f"max |C - Rouse|/C* {err:.2e} for 0.1 <= Z <= 0.9"),
+          (abs(C[0]/ex[0] - 1) < 1e-3, f"first cell C {C[0]:.5f} vs exact {ex[0]:.5f}"),
+          (abs(E - D)/E < 1e-4, f"equilibrium |E - D|/E {abs(E - D)/E:.1e}")]
+for ok, msg in checks: print(("PASS " if ok else "FAIL ") + msg)
+print("PASS" if all(c[0] for c in checks) else "FAIL")
+PY

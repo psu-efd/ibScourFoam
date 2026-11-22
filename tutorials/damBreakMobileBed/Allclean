@@ -1,0 +1,4 @@
+#!/bin/bash
+# Remove the run directories of this tutorial
+cd "${0%/*}" || exit 1
+rm -rf run_case* log.setup.*
